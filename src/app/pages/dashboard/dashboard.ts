@@ -1,59 +1,80 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule, CurrencyPipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
+// 1. Import ChangeDetectorRef เข้ามา
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { Api } from '../../services/api'; 
+import { Api } from '../../services/api';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, CurrencyPipe],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.css']
 })
 export class Dashboard implements OnInit {
+
   allGames: any[] = [];
   filteredGames: any[] = [];
-  bestSellerGames: any[] = []; // สำหรับเกม Best Seller
-
-  isLoading = true;
+  bestSellerGames: any[] = [];
+  isLoading: boolean = true; 
   errorMessage: string | null = null;
-  isAdmin = false;
+  
+  isLoggedIn: boolean = false;
+  isAdmin: boolean = false;
 
-  constructor(private api: Api, private router: Router) { }
+  // 2. Inject ChangeDetectorRef เข้ามาใน constructor
+  constructor(private api: Api, private router: Router, private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
-    this.checkUserRole();
-    this.loadGames();
+    this.checkUserStatus();
   }
-
-  checkUserRole(): void {
+  
+  checkUserStatus(): void {
     const userStr = localStorage.getItem('user');
-    if (userStr) {
+    const token = localStorage.getItem('token');
+
+    if (userStr && token) {
+      this.isLoggedIn = true;
       const user = JSON.parse(userStr);
       this.isAdmin = user.role === 'admin';
+      this.loadGames(); 
+    } else {
+      this.isLoggedIn = false;
+      this.isLoading = false; 
     }
   }
 
   loadGames(): void {
-    this.isLoading = true;
     this.errorMessage = null;
+
     this.api.getAllGames().subscribe({
       next: (data) => {
-        // สร้าง URL ของรูปภาพให้ถูกต้อง
+        if (!Array.isArray(data)) {
+            this.errorMessage = 'รูปแบบข้อมูลที่ได้รับจากเซิร์ฟเวอร์ไม่ถูกต้อง';
+            this.isLoading = false;
+            return;
+        }
+
         this.allGames = data.map(game => ({
           ...game,
           imageUrl: `http://localhost:3000/uploads/${game.image}`
         }));
-
+        
         this.filteredGames = this.allGames;
-        // (ตัวอย่าง) กรองเกม Best Seller (คุณสามารถเปลี่ยน Logic ได้)
         this.bestSellerGames = this.allGames.slice(0, 5); 
         this.isLoading = false;
+
+        // 3. "สะกิด" บอก Angular ให้อัปเดตหน้าจอทันที!
+        this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Failed to load games', err);
-        this.errorMessage = 'ไม่สามารถโหลดข้อมูลเกมได้';
+        console.error('เกิดข้อผิดพลาดระหว่างโหลดข้อมูลเกม:', err);
+        this.errorMessage = 'ไม่สามารถโหลดข้อมูลเกมได้ กรุณาลองใหม่อีกครั้ง';
         this.isLoading = false;
+
+        // "สะกิด" บอก Angular ให้อัปเดตหน้าจอเพื่อแสดง Error
+        this.cdr.detectChanges();
       }
     });
   }
@@ -65,14 +86,16 @@ export class Dashboard implements OnInit {
       return;
     }
     this.filteredGames = this.allGames.filter(game =>
-      game.game_name.toLowerCase().includes(searchTerm)
+      (game.game_name || '').toLowerCase().includes(searchTerm)
     );
   }
 
-  addToCart(event: MouseEvent, gameId: any): void {
-    event.stopPropagation(); // ป้องกันไม่ให้ link ของ card ทำงาน
-    console.log(`Added game ${gameId} to cart!`);
-    // ในอนาคตคุณสามารถเพิ่ม Logic การเพิ่มของลงตะกร้าได้ที่นี่
-    alert(`เพิ่มเกม ${gameId} ลงตะกร้าแล้ว!`);
+  addToCart(event: MouseEvent, gameId: number): void {
+    event.preventDefault(); 
+    event.stopPropagation(); 
+
+    console.log(`กำลังเพิ่มเกม ID: ${gameId} ลงในตะกร้า`);
+    alert(`เพิ่มเกม #${gameId} ลงในตะกร้าแล้ว!`);
   }
 }
+
