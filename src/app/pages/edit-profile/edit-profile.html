@@ -1,34 +1,39 @@
-<div class="container-fluid mt-4">
-  <div class="row">
-    <div class="col-md-3 sidebar">
-      <ul>
-        <li><a routerLink="/profile" class="text-decoration-none text-dark">โปรไฟล์</a></li>
-        <li><a routerLink="/wallet" class="text-decoration-none text-dark fw-bold">Wallet</a></li>
-        <li><a routerLink="/transaction-history" class="text-decoration-none text-dark">ประวัติ</a></li>
-      </ul>
+<div class="container mt-4">
+  <div class="card p-4">
+    <h4>แก้ไขโปรไฟล์</h4>
+
+    <div class="d-flex gap-3 align-items-center my-3">
+      <img [src]="previewUrl" alt="Preview" class="preview-img" />
+      <div>
+        <label class="btn btn-outline-primary">
+          เลือกรูปโปรไฟล์
+          <input type="file" accept="image/*" (change)="onFileSelected($event)" hidden />
+        </label>
+        <div class="text-muted small mt-2">ขนาดแนะนำ 300x300, jpg/png</div>
+      </div>
     </div>
 
-    <div class="col-md-9">
-      <div *ngIf="errorMessage" class="alert alert-danger">
-        {{ errorMessage }}
+    <form (ngSubmit)="save()" [formGroup]="form" novalidate>
+      <div class="mb-3">
+        <label class="form-label">ชื่อผู้ใช้</label>
+        <input class="form-control" formControlName="username" readonly />
       </div>
 
-      <ng-container *ngIf="userProfile; else loadingBlock">
-        <div class="main-content">
-          <img [src]="userProfile.imageUrl" class="profile-img" alt="Profile" />
-          <h4>{{ userProfile.username }}</h4>
-          <p>{{ userProfile.email }}</p>
-          <p class="info-label">ชื่อจริง: <span>{{ userProfile.realname || '-' }}</span></p>
-          <p class="info-label">ชื่อแสดง: <span>{{ userProfile.displayname || '-' }}</span></p>
-          <button class="edit-btn" (click)="editProfile()">แก้ไขข้อมูล</button>
-        </div>
-      </ng-container>
+      <div class="mb-3">
+        <label class="form-label">อีเมล</label>
+        <input class="form-control" formControlName="email" readonly />
+      </div>
 
-      <ng-template #loadingBlock>
-        <div class="text-center text-muted py-4">
-          กำลังโหลดข้อมูลโปรไฟล์ โปรดรอสักครู่...
-        </div>
-      </ng-template>
-    </div>
+
+      <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary" [disabled]="isSaving">
+          <span *ngIf="!isSaving">บันทึก</span>
+          <span *ngIf="isSaving" class="spinner-border spinner-border-sm"></span>
+        </button>
+        <button type="button" class="btn btn-secondary" (click)="cancel()" [disabled]="isSaving">ยกเลิก</button>
+      </div>
+    </form>
   </div>
 </div>
