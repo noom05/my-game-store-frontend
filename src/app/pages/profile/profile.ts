@@ -37,7 +37,7 @@ export class Profile implements OnInit {
 
     try {
       const res = await fetch(
-        `https://games-database-main.onrender.com/user/${uid}`,
+        `http://localhost:3000/user/${uid}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -52,8 +52,8 @@ export class Profile implements OnInit {
       this.userProfile = {
         ...data,
         imageUrl: data.profile
-          ? `https://games-database-main.onrender.com/uploads/${data.profile}`
-          : 'https://placehold.co/140x140?text=No+Image',
+          ? `http://localhost:3000/uploads/${data.profile}`
+          : 'http://placehold.co/140x140?text=No+Image',
       };
 
       console.log('📦 userProfile:', this.userProfile);

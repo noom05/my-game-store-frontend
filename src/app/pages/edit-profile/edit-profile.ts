@@ -52,8 +52,8 @@ export class EditProfile implements OnInit {
     });
 
     this.previewUrl = user.profile
-      ? `https://games-database-main.onrender.com/uploads/${user.profile}`
-      : 'https://placehold.co/140x140?text=No+Image';
+      ? `http://localhost:3000/uploads/${user.profile}`
+      : 'http://placehold.co/140x140?text=No+Image';
 
     this.fetchLatestProfile();
   }
@@ -81,7 +81,7 @@ export class EditProfile implements OnInit {
     this.isSaving = true;
     this.errorMessage = null;
 
-    const url = `https://games-database-main.onrender.com/user/${this.uid}`;
+    const url = `http://localhost:3000/user/${this.uid}`;
     const headers = { Authorization: `Bearer ${this.token}` };
 
     const file = this.getSelectedFile();
@@ -115,8 +115,8 @@ export class EditProfile implements OnInit {
     const updated = res && res.user ? res.user : res;
     const profileFilename = updated.profile ?? null;
     const imageUrl = profileFilename
-      ? `https://games-database-main.onrender.com/uploads/${profileFilename}`
-      : this.previewUrl ?? 'https://placehold.co/140x140?text=No+Image';
+      ? `http://localhost:3000/uploads/${profileFilename}`
+      : this.previewUrl ?? 'http://placehold.co/140x140?text=No+Image';
 
     const saved = { ...updated, imageUrl };
     localStorage.setItem('user', JSON.stringify(saved));
@@ -139,7 +139,7 @@ export class EditProfile implements OnInit {
     this.isLoading = true;
     this.errorMessage = null;
 
-    const url = `https://games-database-main.onrender.com/user/${this.uid}`;
+    const url = `http://localhost:3000/user/${this.uid}`;
     const headers = new HttpHeaders({ Authorization: `Bearer ${this.token}` });
 
     this.http.get<any>(url, { headers, observe: 'response' }).subscribe({
@@ -152,7 +152,7 @@ export class EditProfile implements OnInit {
             email: data.email || this.form.get('email')?.value
           });
           this.previewUrl = data.profile
-            ? `https://games-database-main.onrender.com/uploads/${data.profile}`
+            ? `http://localhost:3000/uploads/${data.profile}`
             : this.previewUrl;
           const merged = { ...data, imageUrl: this.previewUrl };
           localStorage.setItem('user', JSON.stringify(merged));
