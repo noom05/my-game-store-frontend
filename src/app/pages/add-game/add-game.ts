@@ -1,44 +1,74 @@
-import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { FormBuilder, FormGroup, Validators, FormArray, FormControl, ReactiveFormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
+import { Api } from '../../services/api';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-add-game',
-  imports: [CommonModule, ReactiveFormsModule],
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule
+  ],
   templateUrl: './add-game.html',
-  styleUrl: './add-game.css'
+  styleUrls: ['./add-game.css']
 })
-export class AddGame implements OnInit{
-  // สร้าง FormGroup สำหรับฟอร์ม
+export class AddGame implements OnInit {
   addGameForm!: FormGroup;
-  // ตัวแปรสำหรับเก็บ URL ของรูปภาพที่พรีวิว
   imagePreview: string | ArrayBuffer | null = null;
-  // ตัวแปรสำหรับเก็บไฟล์รูปภาพเพื่อส่งไป backend
   selectedFile: File | null = null;
+  allTypes: any[] = [];
 
-  // Inject FormBuilder และ Router เข้ามาใช้งาน
-  constructor(private fb: FormBuilder, private router: Router) { }
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+    private api: Api
+  ) { }
 
   ngOnInit(): void {
-    // กำหนดโครงสร้างของฟอร์มและ validation
     this.addGameForm = this.fb.group({
-      title: ['', Validators.required],
+      game_name: ['', Validators.required],
+      price: ['', [Validators.required, Validators.min(0)]],
       description: ['', Validators.required],
-      releaseDate: ['', Validators.required],
-      genre: [''],
-      price: ['', [Validators.required, Validators.min(0)]]
+      release_date: ['', Validators.required],
+      type_ids: this.fb.array([], Validators.required)
     });
+
+    this.loadTypes();
   }
 
-  // ฟังก์ชันทำงานเมื่อผู้ใช้เลือกไฟล์
+  loadTypes(): void {
+    this.api.getAllTypes().subscribe({
+      next: (types) => {
+        this.allTypes = types;
+      },
+      error: (err) => {
+        console.error('Failed to load types', err);
+        alert('ไม่สามารถโหลดข้อมูลประเภทเกมได้');
+      }
+    });
+  }
+  
+  onTypeChange(event: Event): void {
+    const typeIdsArray = this.addGameForm.get('type_ids') as FormArray;
+    const target = event.target as HTMLInputElement;
+
+    if (target.checked) {
+      typeIdsArray.push(new FormControl(target.value));
+    } else {
+      const index = typeIdsArray.controls.findIndex(x => x.value === target.value);
+      typeIdsArray.removeAt(index);
+    }
+  }
+
   onFileSelect(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
       const file = input.files[0];
-      this.selectedFile = file; // เก็บไฟล์ไว้เพื่ออัปโหลด
+      this.selectedFile = file;
 
-      // สร้างพรีวิวรูปภาพ
       const reader = new FileReader();
       reader.onload = () => {
         this.imagePreview = reader.result;
@@ -47,32 +77,43 @@ export class AddGame implements OnInit{
     }
   }
 
-  // ฟังก์ชันทำงานเมื่อผู้ใช้กด Submit ฟอร์ม
   onSubmit(): void {
-    if (this.addGameForm.invalid) {
-      alert('กรุณากรอกข้อมูลให้ครบถ้วน');
+    if (this.addGameForm.invalid || !this.selectedFile) {
+      alert('กรุณากรอกข้อมูลให้ครบถ้วน, เลือกประเภทเกมอย่างน้อย 1 อย่าง, และเลือกรูปภาพ');
       return;
     }
 
-    // สร้าง FormData เพื่อรวบรวมข้อมูลทั้งหมดสำหรับส่งไป API
     const formData = new FormData();
-    formData.append('title', this.addGameForm.value.title);
-    formData.append('description', this.addGameForm.value.description);
-    formData.append('releaseDate', this.addGameForm.value.releaseDate);
-    formData.append('genre', this.addGameForm.value.genre);
+    formData.append('game_name', this.addGameForm.value.game_name);
     formData.append('price', this.addGameForm.value.price);
-    if (this.selectedFile) {
-      formData.append('gameImage', this.selectedFile, this.selectedFile.name);
+    formData.append('description', this.addGameForm.value.description);
+    formData.append('release_date', this.addGameForm.value.release_date);
+    
+    const typeIds = this.addGameForm.value.type_ids;
+    for (const typeId of typeIds) {
+      formData.append('type_ids[]', typeId);
+    }
+    
+    formData.append('file', this.selectedFile, this.selectedFile.name);
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('ไม่พบ Token, กรุณาเข้าสู่ระบบใหม่');
+      this.router.navigate(['/login']);
+      return;
     }
 
-    console.log('ข้อมูลที่จะส่งไป API:', this.addGameForm.value);
-    console.log('ไฟล์รูป:', this.selectedFile);
-
-    // ***** ณ จุดนี้ คุณจะเรียกใช้ ApiService เพื่อส่ง formData ไปยัง Backend *****
-    // this.apiService.addGame(formData).subscribe(response => { ... });
-
-    // โค้ดชั่วคราวตามฟังก์ชันเดิม
-    alert("✅ เพิ่มเกมเรียบร้อยแล้ว!");
-    this.router.navigate(['/dashboard']); // ใช้ Router ของ Angular ในการเปลี่ยนหน้า
+    this.api.createGame(formData, token).subscribe({
+      next: (response) => {
+        alert('✅ เพิ่มเกมเรียบร้อยแล้ว!');
+        this.router.navigate(['/dashboard']);
+      },
+      error: (err) => {
+        console.error('เกิดข้อผิดพลาดในการเพิ่มเกม:', err);
+        alert(`เกิดข้อผิดพลาด: ${err.error.error || 'ไม่สามารถเพิ่มเกมได้'}`);
+      }
+    });
   }
 }
+// **โค้ดที่ซ้ำซ้อนซึ่งอยู่ตรงนี้ได้ถูกลบออกไปแล้ว**
+

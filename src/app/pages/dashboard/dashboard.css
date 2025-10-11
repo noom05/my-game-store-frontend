@@ -1,57 +1,112 @@
-.game-card img {
-  height: 180px;
-  object-fit: cover;
-}
-
-body {
-  font-family: "Arial", sans-serif;
-  background-color: #f4f4f4;
-}
-
-.navbar {
-  background-color: #ff6600 !important;
-}
-
-.navbar .nav-link,
-.navbar .navbar-brand {
-  color: white !important;
-  font-weight: bold;
-}
-
-.navbar .btn-danger {
-  background-color: #dc3545;
-  border: none;
+:host {
+  display: block;
+  background-color: #f8f9fa;
+  min-height: 100vh;
 }
 
 .banner {
-  background-image: url("/assets/fc26.jpg");
+  height: 400px;
   background-size: cover;
   background-position: center;
-  background-repeat: no-repeat;
-  height: 500px;
-  position: relative;
-  border-radius: 10px;
-  margin-bottom: 30px;
+  border-radius: 1rem;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 }
 
-.banner-overlay {
+.section-title {
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  position: relative;
+  padding-bottom: 0.5rem;
+}
+
+.section-title::after {
+  content: '';
   position: absolute;
   bottom: 0;
   left: 0;
-  right: 0;
-  padding: 30px;
-  background: rgba(0, 0, 0, 0.6);
-  color: white;
-  border-radius: 0 0 10px 10px;
-  text-align: center;
+  width: 50px;
+  height: 4px;
+  background-color: #ffc107;
+  border-radius: 2px;
 }
 
-.card {
+.search-bar {
+  display: flex;
+  max-width: 400px;
+}
+
+.game-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  height: 100%;
+}
+
+.game-card {
   border: none;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.card .btn {
-  border-radius: 5px;
+.game-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.game-card .card-img-top {
+  height: 200px;
+  object-fit: cover;
+}
+
+.game-card .card-body {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.game-card .card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  flex-grow: 1; /* ทำให้ title ดัน footer ลงไปข้างล่าง */
+}
+
+.game-card .categories {
+  font-size: 0.8rem;
+  color: #6c757d;
+  margin-bottom: 0;
+}
+
+.game-card .card-footer {
+  background-color: #fff;
+  border-top: 1px solid #f1f1f1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+}
+
+.game-card .price {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #fd7e14;
+}
+
+.game-card .cart-btn {
+  background-color: #ffc107;
+  color: #333;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  transition: background-color 0.2s;
+}
+
+.game-card .cart-btn:hover {
+  background-color: #ffca2c;
 }

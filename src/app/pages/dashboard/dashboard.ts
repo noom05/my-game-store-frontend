@@ -1,71 +1,78 @@
-import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';;
+import { CommonModule, CurrencyPipe } from '@angular/common';
+import { Router, RouterModule } from '@angular/router';
+import { Api } from '../../services/api'; 
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CommonModule, ReactiveFormsModule],
+  standalone: true,
+  imports: [CommonModule, RouterModule, CurrencyPipe],
   templateUrl: './dashboard.html',
-  styleUrl: './dashboard.css'
+  styleUrls: ['./dashboard.css']
 })
 export class Dashboard implements OnInit {
+  allGames: any[] = [];
+  filteredGames: any[] = [];
+  bestSellerGames: any[] = []; // สำหรับเกม Best Seller
 
-  // 1. สร้าง Properties เพื่อควบคุมการแสดงผลใน HTML
-  isLoggedIn: boolean = false;
-  isAdmin: boolean = false;
-  user: any = null;
+  isLoading = true;
+  errorMessage: string | null = null;
+  isAdmin = false;
 
-  // ตัวแปรสำหรับเก็บเกม (ในโปรเจกต์จริง ข้อมูลนี้ควรมาจาก API)
-  allGames: any[] = [
-    { id: 'bf2042', title: 'Battlefield 2042', price: 1050.00, image: '/assets/battlefield.jpg', bestSeller: true },
-    { id: 'fc26', title: 'FC 26', price: 1990.00, image: '/assets/fc26.jpg' }
-    // ... เพิ่มเกมอื่นๆ ที่นี่
-  ];
-  filteredGames: any[] = []; // ตัวแปรสำหรับเก็บเกมที่ผ่านการค้นหา
+  constructor(private api: Api, private router: Router) { }
 
-  constructor(private router: Router) { }
-
-  // 2. Logic ทั้งหมดจะเริ่มทำงานใน ngOnInit
   ngOnInit(): void {
-    const userStr = localStorage.getItem('user');
-    const token = localStorage.getItem('token');
-
-    if (userStr && token) {
-      this.isLoggedIn = true;
-      this.user = JSON.parse(userStr);
-      if (this.user.role === 'admin') {
-        this.isAdmin = true;
-      }
-    } else {
-      this.isLoggedIn = false;
-      this.isAdmin = false;
-    }
-
-    // ตอนเริ่มต้น ให้แสดงเกมทั้งหมด
-    this.filteredGames = this.allGames;
+    this.checkUserRole();
+    this.loadGames();
   }
 
-  // 3. สร้างฟังก์ชัน searchGame และ logout เป็นเมธอด
+  checkUserRole(): void {
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      const user = JSON.parse(userStr);
+      this.isAdmin = user.role === 'admin';
+    }
+  }
+
+  loadGames(): void {
+    this.isLoading = true;
+    this.errorMessage = null;
+    this.api.getAllGames().subscribe({
+      next: (data) => {
+        // สร้าง URL ของรูปภาพให้ถูกต้อง
+        this.allGames = data.map(game => ({
+          ...game,
+          imageUrl: `http://localhost:3000/uploads/${game.image}`
+        }));
+
+        this.filteredGames = this.allGames;
+        // (ตัวอย่าง) กรองเกม Best Seller (คุณสามารถเปลี่ยน Logic ได้)
+        this.bestSellerGames = this.allGames.slice(0, 5); 
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Failed to load games', err);
+        this.errorMessage = 'ไม่สามารถโหลดข้อมูลเกมได้';
+        this.isLoading = false;
+      }
+    });
+  }
+
   searchGame(keyword: string): void {
     const searchTerm = keyword.trim().toLowerCase();
     if (!searchTerm) {
-      this.filteredGames = this.allGames; // ถ้าช่องค้นหาว่าง ให้แสดงเกมทั้งหมด
+      this.filteredGames = this.allGames;
       return;
     }
-
     this.filteredGames = this.allGames.filter(game =>
-      game.title.toLowerCase().includes(searchTerm)
+      game.game_name.toLowerCase().includes(searchTerm)
     );
-
-    if (this.filteredGames.length === 0) {
-      alert('ไม่พบเกมที่คุณค้นหา');
-    }
   }
 
-  logout(): void {
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
-    this.router.navigate(['/login']); // กลับไปหน้า login
+  addToCart(event: MouseEvent, gameId: any): void {
+    event.stopPropagation(); // ป้องกันไม่ให้ link ของ card ทำงาน
+    console.log(`Added game ${gameId} to cart!`);
+    // ในอนาคตคุณสามารถเพิ่ม Logic การเพิ่มของลงตะกร้าได้ที่นี่
+    alert(`เพิ่มเกม ${gameId} ลงตะกร้าแล้ว!`);
   }
 }

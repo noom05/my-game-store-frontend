@@ -1,0 +1,78 @@
+<div class="container my-5">
+  <!-- ใช้ [formGroup] เพื่อผูกฟอร์มเข้ากับ addGameForm -->
+  <form [formGroup]="addGameForm" (ngSubmit)="onSubmit()">
+    <div class="form-section row align-items-stretch">
+      
+      <!-- ส่วนแสดงรูปภาพและอัปโหลด (ด้านซ้าย) -->
+      <div class="col-md-5">
+        <!-- #fileInput เป็นการตั้งชื่อเล่นให้ input นี้ -->
+        <input #fileInput type="file" (change)="onFileSelect($event)" accept="image/*" class="d-none" />
+        <label for="gameImage" class="d-block">
+          <!-- เมื่อคลิกที่ div นี้ จะไปสั่งให้ #fileInput ทำงาน -->
+          <div id="imagePreview" (click)="fileInput.click()">
+            <!-- แสดงรูปตัวอย่างถ้ามี -->
+            <img *ngIf="imagePreview" [src]="imagePreview" alt="Game Image Preview" />
+            <!-- แสดงข้อความถ้ายังไม่มีรูป -->
+            <span *ngIf="!imagePreview" class="text-muted">คลิกเพื่ออัปโหลดรูปภาพเกม</span>
+          </div>
+        </label>
+      </div>
+
+      <!-- ฟอร์มกรอกข้อมูล (ด้านขวา) -->
+      <div class="col-md-7">
+          <h3 class="mb-4">เพิ่มเกมใหม่</h3>
+          
+          <div class="mb-3">
+            <label class="form-label">ชื่อเกม</label>
+            <!-- formControlName ต้องตรงกับชื่อใน fb.group() -->
+            <input type="text" class="form-control" formControlName="game_name" />
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">รายละเอียด</label>
+            <textarea class="form-control" formControlName="description" rows="3"></textarea>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">ราคา</label>
+              <input type="number" class="form-control" formControlName="price" />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">วันวางจำหน่าย</label>
+              <input type="date" class="form-control" formControlName="release_date" />
+            </div>
+          </div>
+
+          <!-- ส่วนของ Checkbox สำหรับเลือกประเภทเกม -->
+          <div class="mb-4">
+            <label class="form-label">ประเภทเกม</label>
+            <div class="d-flex flex-wrap gap-3">
+              <!-- ใช้ *ngFor เพื่อวนลูปสร้าง Checkbox จากข้อมูล allTypes -->
+              <div *ngFor="let type of allTypes" class="form-check">
+                <input 
+                  class="form-check-input" 
+                  type="checkbox" 
+                  [value]="type.id" 
+                  (change)="onTypeChange($event)"
+                  id="type-{{type.id}}">
+                <label class="form-check-label" for="type-{{type.id}}">
+                  {{ type.type_name }}
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-end gap-2 mt-auto">
+            <!-- ปุ่มจะถูก disable อัตโนมัติถ้าฟอร์มไม่สมบูรณ์ -->
+            <button type="submit" class="btn btn-success" [disabled]="addGameForm.invalid || !selectedFile">
+              <i class="bi bi-check-circle"></i> บันทึก
+            </button>
+            <a routerLink="/dashboard" class="btn btn-secondary">
+              <i class="bi bi-x-circle"></i> ยกเลิก
+            </a>
+          </div>
+      </div>
+    </div>
+  </form>
+</div>

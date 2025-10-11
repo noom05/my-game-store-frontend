@@ -1,120 +1,91 @@
-<!DOCTYPE html>
-<html lang="th">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Game Store Dashboard</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="dashboard.css" />
-  </head>
-  <body class="bg-light">
-    <nav
-      class="navbar navbar-expand-lg px-4"
-      id="mainNavbar"
-      style="display: none"
-    >
-      <a class="navbar-brand" href="dashboard.html"
-        ><i class="bi bi-controller me-2"></i>GameStore</a
-      >
-      <button
-        class="navbar-toggler"
-        type="button"
-        data-bs-toggle="collapse"
-        data-bs-target="#navbarNav"
-      >
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav me-auto" id="navUser" style="display: none">
-          <li class="nav-item">
-            <a class="nav-link" href="dashboard.html">หน้าหลัก</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="pagenotfound.html">คลัง</a>
-          </li>
-        </ul>
+<!-- ส่วนแสดงผลหลัก -->
+<div class="container-fluid px-md-5 py-4">
 
-        <ul class="navbar-nav me-auto" id="navAdmin" style="display: none">
-          <li class="nav-item">
-            <a class="nav-link" href="dashboard.html">หน้าหลัก</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">ประวัติการทำธุรกรรมที่ผ่านมา</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">โค้ดส่วนลด</a>
-          </li>
-        </ul>
+  <!-- แสดง Spinner ขณะกำลังโหลด -->
+  <div *ngIf="isLoading" class="text-center py-5">
+    <div class="spinner-border text-warning" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-2">กำลังโหลดข้อมูลเกม...</p>
+  </div>
 
-        <ul class="navbar-nav d-flex align-items-center">
-          <li class="nav-item me-3">
-            <a class="nav-link" href="pagenotfound.html"
-              ><i class="bi bi-cart"></i> ตะกร้า</a
-            >
-          </li>
-          <li class="nav-item me-3">
-            <a class="nav-link" href="profile.html"
-              ><i class="bi bi-person-circle"></i> โปรไฟล์</a
-            >
-          </li>
-          <li class="nav-item">
-            <a class="btn btn-sm btn-danger" href="login.html">ออกจากระบบ</a>
-          </li>
-        </ul>
-      </div>
-    </nav>
+  <!-- แสดง Error ถ้ามี -->
+  <div *ngIf="errorMessage" class="alert alert-danger">
+    {{ errorMessage }}
+  </div>
 
-    <div class="text-end px-4 py-3" id="loginOnly" style="display: none">
-      <a class="btn btn-sm btn-primary" href="login.html">เข้าสู่ระบบ</a>
+  <!-- แสดงเนื้อหาเมื่อโหลดเสร็จแล้ว -->
+  <div *ngIf="!isLoading && !errorMessage">
+    <!-- Banner -->
+    <div class="banner mb-5" style="background-image: url('http://localhost:3000/assets/fc26.jpg');">
     </div>
 
-    <div class="container mt-4">
-      <div class="banner">
-        <div class="banner-overlay">
-          <h2>🔥 FC 26 โดย EA Sports</h2>
-        </div>
-      </div>
-
-      <div class="row justify-content-center mb-4">
-        <div class="col-md-8">
-          <div class="input-group">
-            <input
-              type="text"
-              id="searchInput"
-              class="form-control"
-              placeholder="ค้นหาเกมที่คุณต้องการ..."
-            />
-            <button class="btn btn-warning" onclick="searchGame()">
-              <i class="bi bi-search"></i> ค้นหา
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <h4 id="welcome" class="text-center mb-4"></h4>
-
-      <h5 class="mb-3">Best Seller</h5>
-      <div class="row row-cols-1 row-cols-md-5 g-3 mb-4">
-        </div>
-
-      <h5 class="mb-3">All Games</h5>
-      <div class="row row-cols-1 row-cols-md-4 g-3 mb-5">
-        </div>
-
-      <div id="adminPanel" class="mb-4" style="display: none">
-        </div>
-      <div id="userPanel" class="mb-4" style="display: none">
-        </div>
+    <!-- ปุ่มเพิ่มเกมสำหรับ Admin -->
+    <div *ngIf="isAdmin" class="d-flex justify-content-end mb-4">
+      <a routerLink="/add-game" class="btn btn-success">
+        <i class="bi bi-plus-circle-fill me-2"></i>เพิ่มเกมใหม่
+      </a>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="dashboard.js"></script>
-  </body>
-</html>
+    <!-- Best Seller Section -->
+    <section class="mb-5">
+      <h2 class="section-title">Best Seller</h2>
+      <div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-4">
+        <div *ngFor="let game of bestSellerGames" class="col">
+          <a [routerLink]="['/detail', game.id]" class="game-card-link">
+            <div class="card game-card h-100">
+              <img [src]="game.imageUrl" class="card-img-top" [alt]="game.game_name">
+              <div class="card-body">
+                <h5 class="card-title">{{ game.game_name }}</h5>
+              </div>
+              <div class="card-footer">
+                <span class="price">{{ game.price | currency:'฿':'symbol':'1.0-0' }}</span>
+                <button class="btn cart-btn" (click)="addToCart($event, game.id)">
+                  <i class="bi bi-cart-plus"></i>
+                </button>
+              </div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- All Games Section -->
+    <section>
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="section-title">All Games</h2>
+        <!-- Search Bar -->
+        <div class="search-bar">
+          <input #searchInput type="text" class="form-control" placeholder="ค้นหาเกม..." (keyup.enter)="searchGame(searchInput.value)">
+          <button class="btn btn-warning" (click)="searchGame(searchInput.value)">
+            <i class="bi bi-search"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4">
+        <div *ngFor="let game of filteredGames" class="col">
+          <a [routerLink]="['/detail', game.id]" class="game-card-link">
+            <div class="card game-card h-100">
+              <img [src]="game.imageUrl" class="card-img-top" [alt]="game.game_name">
+              <div class="card-body">
+                <h5 class="card-title">{{ game.game_name }}</h5>
+                <p class="card-text categories">{{ game.categories }}</p>
+              </div>
+              <div class="card-footer">
+                <span class="price">{{ game.price | currency:'฿':'symbol':'1.0-0' }}</span>
+                <button class="btn cart-btn" (click)="addToCart($event, game.id)">
+                  <i class="bi bi-cart-plus"></i>
+                </button>
+              </div>
+            </div>
+          </a>
+        </div>
+        <!-- แสดงข้อความเมื่อไม่พบเกมจากการค้นหา -->
+        <div *ngIf="filteredGames.length === 0" class="col-12 text-center py-5">
+          <h4>ไม่พบเกมที่คุณค้นหา</h4>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

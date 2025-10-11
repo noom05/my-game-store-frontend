@@ -1,69 +1,62 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
-import { CommonModule } from '@angular/common'; 
-
+import { Router, RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { Api } from '../../services/api'; // 1. Import Api service
 
 @Component({
   selector: 'app-login',
-  imports: [CommonModule, ReactiveFormsModule],
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './login.html',
-  styleUrl: './login.css'
+  styleUrls: ['./login.css']
 })
 export class Login implements OnInit {
   loginForm!: FormGroup;
   errorMessage: string | null = null;
 
-  // Inject FormBuilder และ Router เข้ามาใช้งาน
-  constructor(private fb: FormBuilder, private router: Router) { }
+  // 2. Inject Api service เข้ามาใช้งาน
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+    private api: Api
+  ) { }
 
   ngOnInit(): void {
-    // สร้างฟอร์มด้วย FormBuilder พร้อมกำหนด validation พื้นฐาน
     this.loginForm = this.fb.group({
       username: ['', Validators.required],
       password: ['', Validators.required]
     });
   }
 
-  async onSubmit(): Promise<void> {
-    // ถ้าฟอร์มไม่สมบูรณ์ ให้หยุดทำงาน
+  // 3. แก้ไข onSubmit ให้เรียกใช้ Api service
+  onSubmit(): void {
     if (this.loginForm.invalid) {
       this.errorMessage = "กรุณากรอกชื่อผู้ใช้และรหัสผ่าน";
       return;
     }
 
-    this.errorMessage = null; // เคลียร์ข้อความ error เก่า
+    this.errorMessage = null;
 
-    try {
-      // ดึงค่าจากฟอร์มด้วย this.loginForm.value
-      const { username, password } = this.loginForm.value;
+    const credentials = this.loginForm.value;
 
-      const res = await fetch(
-        "https://games-database-main.onrender.com/user/login",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, password }),
+    // 4. เรียกใช้ api.login() และจัดการผลลัพธ์ด้วย subscribe
+    this.api.login(credentials).subscribe({
+      next: (data) => {
+        // เมื่อ Login สำเร็จ
+        if (data.token && data.user) {
+          localStorage.setItem("token", data.token);
+          localStorage.setItem("user", JSON.stringify(data.user));
+          this.router.navigate(['/dashboard']);
+        } else {
+          this.errorMessage = "ข้อมูลที่ได้รับไม่ถูกต้อง";
         }
-      );
-
-      const data = await res.json();
-
-      if (!res.ok || !data.token || !data.user) {
-        this.errorMessage = data.error || "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง";
-        return;
+      },
+      error: (err) => {
+        // เมื่อเกิด Error จาก API
+        console.error('Login error:', err);
+        this.errorMessage = err.error.error || "เกิดข้อผิดพลาดในการเข้าสู่ระบบ";
       }
-
-      // เก็บ token และ user ลง localStorage
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-
-      // เปลี่ยนหน้าไปที่ dashboard
-      this.router.navigate(['/dashboard']);
-
-    } catch (err) {
-      console.error(err);
-      this.errorMessage = "เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์";
-    }
+    });
   }
 }
