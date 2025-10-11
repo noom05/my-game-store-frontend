@@ -7,25 +7,25 @@
   </button>
   <div class="collapse navbar-collapse" id="navbarNav">
 
-    <ul *ngIf="!isAdmin" class="navbar-nav me-auto">
+    <ul class="navbar-nav me-auto">
       <li class="nav-item">
         <a class="nav-link" routerLink="/dashboard">หน้าหลัก</a>
       </li>
-      <li class="nav-item">
-        <a class="nav-link" routerLink="/library">คลัง</a>
-      </li>
-    </ul>
 
-    <ul *ngIf="isAdmin" class="navbar-nav me-auto">
-      <li class="nav-item">
-        <a class="nav-link" routerLink="/dashboard">หน้าหลัก</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" routerLink="/transactions">ประวัติการทำธุรกรรม</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" routerLink="/discounts">โค้ดส่วนลด</a>
-      </li>
+      <ng-container *ngIf="isAdmin; else userMenu">
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/transactions">ประวัติการทำธุรกรรม</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/discounts">โค้ดส่วนลด</a>
+        </li>
+      </ng-container>
+
+      <ng-template #userMenu>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/library">คลัง</a>
+        </li>
+      </ng-template>
     </ul>
 
     <ul class="navbar-nav d-flex align-items-center">
@@ -35,10 +35,11 @@
       <li class="nav-item me-3">
         <a class="nav-link" routerLink="/profile"><i class="bi bi-person-circle"></i> โปรไฟล์</a>
       </li>
+      <li class="nav-item me-3">
+        <span class="nav-link">ยินดีต้อนรับ, {{ user?.username }}</span>
+      </li>
       <li class="nav-item">
-        <button class="btn btn-sm btn-danger" (click)="logout()">
-          ออกจากระบบ
-        </button>
+        <button class="btn btn-sm btn-danger" (click)="logout()">ออกจากระบบ</button>
       </li>
     </ul>
   </div>

@@ -1,44 +1,36 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
+import { UserService } from '../../services/user';
 
 @Component({
   selector: 'app-header',
-  imports: [CommonModule,     // เพื่อให้ *ngIf, *ngFor ใช้งานได้
-    RouterModule ],
+  standalone: true,
+  imports: [CommonModule, RouterModule],
   templateUrl: './header.html',
   styleUrl: './header.css'
 })
 export class Header implements OnInit {
-
   isLoggedIn: boolean = false;
   isAdmin: boolean = false;
   user: any = null;
 
-  constructor(private router: Router) { }
+  constructor(private router: Router, private userService: UserService) {}
 
   ngOnInit(): void {
-    // เช็กข้อมูลจาก localStorage ตอนที่ component โหลดขึ้นมา
-    const userStr = localStorage.getItem('user');
-    const token = localStorage.getItem('token');
+    // โหลดสถานะผู้ใช้จาก localStorage (ครั้งแรก)
+    this.userService.loadUserFromStorage();
 
-    if (userStr && token) {
-      this.isLoggedIn = true;
-      this.user = JSON.parse(userStr);
-      if (this.user.role === 'admin') {
-        this.isAdmin = true;
-      }
-    } else {
-      this.isLoggedIn = false;
-    }
+    // Subscribe เพื่อรับการเปลี่ยนแปลงแบบ real-time
+    this.userService.currentUser$.subscribe(user => {
+      this.user = user;
+      this.isLoggedIn = !!user;
+      this.isAdmin = user?.role === 'admin';
+    });
   }
 
-  // ฟังก์ชันสำหรับออกจากระบบ
   logout(): void {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    this.isLoggedIn = false;
-    this.isAdmin = false;
-    this.router.navigate(['/login']); // กลับไปหน้า login
+    this.userService.clearUser();
+    this.router.navigate(['/login']);
   }
 }

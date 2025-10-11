@@ -20,15 +20,13 @@
         <label class="form-label">รหัสผ่าน</label>
         <input type="password" class="form-control" formControlName="password" />
       </div>
-      <div class="mb-3">
-        <label for="file" class="form-label">เลือกรูปภาพโปรไฟล์ (ถ้ามี)</label>
-        <input type="file" class="form-control" (change)="onFileSelected($event)" accept="image/*" />
-      </div>
-      <button type="submit" class="btn btn-success w-100" [disabled]="registerForm.invalid">สมัครสมาชิก</button>
+
+      <button type="submit" class="btn btn-success w-100">สมัครสมาชิก</button>
       <button type="button" class="btn btn-outline-secondary w-100 mt-2" routerLink="/login">
         กลับไปหน้าเข้าสู่ระบบ
       </button>
     </form>
+
     <div *ngIf="errorMessage" class="text-danger mt-3 text-center">
       {{ errorMessage }}
     </div>

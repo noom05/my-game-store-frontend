@@ -15,8 +15,8 @@
         return this.http.post<any>(`${this.apiUrl}/user/login`, credentials);
       }
 
-      register(userData: FormData): Observable<any> {
-        return this.http.post<any>(`${this.apiUrl}/user/register`, userData);
+      register(data: any): Observable<any> {
+        return this.http.post<any>(`${this.apiUrl}/user/register`, data);
       }
 
       // --- ฟังก์ชันสำหรับ Games ---

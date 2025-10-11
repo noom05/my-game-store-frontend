@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Api } from '../../services/api';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-register',
@@ -15,7 +16,7 @@ export class Register implements OnInit {
   registerForm!: FormGroup;
   errorMessage: string | null = null;
   successMessage: string | null = null;
-  selectedFile: File | null = null;
+  loading = false;
 
   constructor(
     private fb: FormBuilder,
@@ -31,41 +32,40 @@ export class Register implements OnInit {
     });
   }
 
-  onFileSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
-      this.selectedFile = input.files[0];
-    }
+  // <<< แก้ตรงนี้ ให้คืน any >>>
+  get f(): any {
+    return this.registerForm.controls;
   }
 
   onSubmit(): void {
+    this.errorMessage = null;
+    this.successMessage = null;
+
     if (this.registerForm.invalid) {
+      Object.values(this.f).forEach((control: any) => control.markAsTouched());
       this.errorMessage = 'กรุณากรอกข้อมูลให้ครบถ้วนและถูกต้อง';
       return;
     }
 
-    this.errorMessage = null;
-    this.successMessage = null;
+    const payload = {
+      username: this.f.username.value,
+      email: this.f.email.value,
+      password: this.f.password.value
+    };
 
-    const formData = new FormData();
-    formData.append('username', this.registerForm.value.username);
-    formData.append('email', this.registerForm.value.email);
-    formData.append('password', this.registerForm.value.password);
-    if (this.selectedFile) {
-      formData.append('file', this.selectedFile, this.selectedFile.name);
-    }
-
-    this.api.register(formData).subscribe({
-      next: (response) => {
-        this.successMessage = '✅ สมัครสมาชิกสำเร็จ! กำลังนำท่านไปหน้าเข้าสู่ระบบ...';
-        setTimeout(() => {
-          this.router.navigate(['/login']);
-        }, 2000);
-      },
-      error: (err) => {
-        console.error('Register error:', err);
-        this.errorMessage = err.error.error || 'เกิดข้อผิดพลาดในการสมัครสมาชิก';
-      }
-    });
+    this.loading = true;
+    this.api.register(payload)
+      .pipe(finalize(() => (this.loading = false)))
+      .subscribe({
+        next: (response) => {
+          this.successMessage = '✅ สมัครสมาชิกสำเร็จ! กำลังนำท่านไปหน้าเข้าสู่ระบบ...';
+          setTimeout(() => this.router.navigate(['/login']), 1500);
+        },
+        error: (err) => {
+          console.error('Register error:', err);
+          this.errorMessage = err?.error?.error || err?.message || 'เกิดข้อผิดพลาดในการสมัครสมาชิก';
+        }
+      });
   }
 }
+

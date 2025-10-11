@@ -1,82 +1,81 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
+import {
+  HttpClient,
+  HttpClientModule,
+  HttpHeaders
+} from '@angular/common/http';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-edit-profile',
-  imports: [CommonModule, RouterModule],
+  standalone: true,
+  imports: [CommonModule, RouterModule, HttpClientModule],
   templateUrl: './edit-profile.html',
-  styleUrl: './edit-profile.css'
+  styleUrls: ['./edit-profile.css'],
 })
 export class EditProfile implements OnInit {
-
   userProfile: any = null;
-  isLoading: boolean = true;
+  isLoading: boolean = false;
   errorMessage: string | null = null;
-  
+
   private token: string | null = null;
   private userFromStorage: any = null;
 
-  constructor(private router: Router) { }
+  constructor(private router: Router, private http: HttpClient) {}
 
   ngOnInit(): void {
-    // 1. ดึงข้อมูล user และ token จาก localStorage
     const userStr = localStorage.getItem('user');
     this.token = localStorage.getItem('token');
 
-    // 2. ตรวจสอบว่ามีข้อมูลหรือไม่ ถ้าไม่ ให้ redirect ไปหน้า login
     if (!userStr || !this.token) {
-      alert("กรุณาเข้าสู่ระบบก่อน");
+      alert('กรุณาเข้าสู่ระบบก่อน');
       this.router.navigate(['/login']);
-      return; 
+      return;
     }
-    
-    // 3. ถ้ามีข้อมูลครบ ให้เริ่มโหลดโปรไฟล์
+
     this.userFromStorage = JSON.parse(userStr);
     this.loadUserProfile();
   }
 
-  // เมธอดสำหรับโหลดข้อมูลโปรไฟล์ล่าสุดจาก API
-  async loadUserProfile(): Promise<void> {
+  loadUserProfile(): void {
+    const uid = this.userFromStorage?.uid;
+    if (!uid) {
+      this.errorMessage = 'UID ของผู้ใช้ไม่ถูกต้อง';
+      return;
+    }
+
     this.isLoading = true;
     this.errorMessage = null;
 
-    try {
-      const res = await fetch(
-        `https://games-database-main.onrender.com/user/${this.userFromStorage.uid}`,
-        {
-          headers: { Authorization: `Bearer ${this.token}` },
-        }
-      );
+    const url = `https://games-database-main.onrender.com/user/${uid}`;
+    const headers = new HttpHeaders({ Authorization: `Bearer ${this.token}` });
 
-      if (!res.ok) {
-        throw new Error("โหลดข้อมูลโปรไฟล์ไม่สำเร็จ");
-      }
-      
-      const data = await res.json();
-      
-      // อัปเดตข้อมูล userProfile ด้วยข้อมูลล่าสุดจาก API
-      this.userProfile = data;
-
-      // สร้าง URL ของรูปภาพโปรไฟล์ให้สมบูรณ์
-      if (this.userProfile.profile) {
-        this.userProfile.imageUrl = `https://games-database-main.onrender.com/uploads/${this.userProfile.profile}`;
-      } else {
-        this.userProfile.imageUrl = "https://placehold.co/140x140?text=No+Image";
-      }
-
-    } catch (err: any) {
-      this.errorMessage = err.message;
-      console.error("❌ Error loading user profile:", err);
-    } finally {
-      this.isLoading = false;
-    }
+    this.http
+      .get<any>(url, { headers, observe: 'response' })
+      .pipe(finalize(() => (this.isLoading = false)))
+      .subscribe({
+        next: (resp) => {
+          const data = resp.body;
+          if (!data || typeof data !== 'object') {
+            this.errorMessage = 'ข้อมูลโปรไฟล์ไม่ถูกต้อง';
+            return;
+          }
+          this.userProfile = data;
+          this.userProfile.imageUrl = this.userProfile.profile
+            ? `https://games-database-main.onrender.com/uploads/${this.userProfile.profile}`
+            : 'https://placehold.co/140x140?text=No+Image';
+        },
+        error: (err) => {
+          this.errorMessage =
+            err?.status ? `โหลดข้อมูลโปรไฟล์ไม่สำเร็จ (status ${err.status})` : err?.message || 'โหลดข้อมูลโปรไฟล์ไม่สำเร็จ';
+        },
+      });
   }
-  
-  // เมธอดสำหรับนำทางไปหน้าแก้ไขโปรไฟล์
+
   editProfile(): void {
     if (this.userProfile) {
-      // ส่ง uid ไปกับ URL
       this.router.navigate(['/edit-profile', this.userProfile.uid]);
     }
   }
