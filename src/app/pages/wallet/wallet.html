@@ -1,0 +1,37 @@
+<main class="main-container">
+  <aside class="sidebar">
+    <ul>
+      <li><a routerLink="/profile" class="text-decoration-none text-dark d-flex align-items-center gap-3"><i class="bi bi-person"></i><span>โปรไฟล์</span></a></li>
+      <li><a routerLink="/pending" class="text-decoration-none text-dark d-flex align-items-center gap-3"><i class="bi bi-credit-card"></i><span>รอยืนยัน</span></a></li>
+      <li><a routerLink="/history" class="text-decoration-none text-dark d-flex align-items-center gap-3"><i class="bi bi-clock-history"></i><span>ประวัติ</span></a></li>
+    </ul>
+  </aside>
+
+  <section class="wallet-section">
+    <h1>My Wallet</h1>
+    <form [formGroup]="walletForm" (ngSubmit)="onSubmit()">
+      <label for="amount">กรอกจำนวนเงิน</label>
+      <input
+        type="number"
+        id="amount"
+        class="amount-input"
+        placeholder="กรอกจำนวนเงิน"
+        formControlName="amount"
+      />
+
+      <div class="preset-amounts">
+        <button
+          *ngFor="let amount of presetAmounts"
+          type="button"
+          class="amount-btn"
+          (click)="selectAmount(amount)"
+          [class.active]="walletForm.get('amount')?.value === amount"
+        >
+          {{ amount }}
+        </button>
+      </div>
+
+      <button type="submit" class="confirm-btn" [disabled]="walletForm.invalid">ยืนยัน</button>
+    </form>
+  </section>
+</main>

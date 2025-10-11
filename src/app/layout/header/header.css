@@ -1,0 +1,14 @@
+.navbar {
+  background-color: #ff6600 !important;
+}
+
+.navbar .nav-link,
+.navbar .navbar-brand {
+  color: white !important;
+  font-weight: bold;
+}
+
+.navbar .btn-danger {
+  background-color: #dc3545;
+  border: none;
+}

@@ -1,0 +1,43 @@
+<div class="container">
+  <form *ngIf="editGameForm" [formGroup]="editGameForm" (ngSubmit)="onSubmit()">
+    <div class="form-section row align-items-stretch">
+      
+      <div class="col-md-5">
+        <input #fileInput type="file" (change)="onFileSelected($event)" accept="image/*" class="form-control d-none" />
+        <label for="gameImage" class="d-block">
+          <div id="imagePreview" (click)="fileInput.click()">
+            <img *ngIf="imagePreview" [src]="imagePreview" alt="Game Image Preview" />
+            <span *ngIf="!imagePreview" class="text-muted">คลิกเพื่ออัปโหลดรูปภาพเกม</span>
+          </div>
+        </label>
+      </div>
+
+      <div class="col-md-7">
+          <div class="mb-3">
+            <label class="form-label">ชื่อไอเท็ม</label>
+            <input type="text" class="form-control" formControlName="title" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">รายละเอียดเพิ่มเติม</label>
+            <textarea class="form-control" formControlName="description" rows="3"></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">วันที่ทำรายการล่าสุด</label>
+            <input type="date" class="form-control" formControlName="lastDate" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">ประเภทเกม</label>
+            <input type="text" class="form-control" formControlName="genre" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">ราคา</label>
+            <input type="number" class="form-control" formControlName="price" />
+          </div>
+          <div class="d-flex justify-content-end gap-2">
+            <button type="submit" class="btn btn-success" [disabled]="editGameForm.invalid">บันทึก</button>
+            <a routerLink="/dashboard" class="btn btn-secondary">ยกเลิก</a>
+          </div>
+      </div>
+    </div>
+  </form>
+</div>

@@ -1,0 +1,27 @@
+<div class="col-md-9">
+
+    <div *ngIf="isLoading" class="d-flex justify-content-center align-items-center h-100">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <div *ngIf="errorMessage" class="alert alert-danger">
+        {{ errorMessage }}
+    </div>
+
+    <div *ngIf="!isLoading && userProfile && !errorMessage" class="main-content">
+        
+        <img [src]="userProfile.imageUrl" class="profile-img" alt="Profile" />
+        
+        <h4>{{ userProfile.username }}</h4>
+        <p>{{ userProfile.email }}</p>
+        
+        <p class="info-label">ชื่อจริง: <span>{{ userProfile.realname || '-' }}</span></p>
+        <p class="info-label">ชื่อแสดง: <span>{{ userProfile.displayname || '-' }}</span></p>
+        
+        <button class="edit-btn" (click)="editProfile()">
+            แก้ไขข้อมูล
+        </button>
+    </div>
+</div>

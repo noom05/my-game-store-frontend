@@ -1,0 +1,35 @@
+<div class="left-panel">
+  <h2>ยินดีต้อนรับกลับสู่ GameShop</h2>
+  <div class="profile-circle"></div>
+  <p>กรุณาเข้าสู่ระบบเพื่อเข้าถึงบัญชีของคุณ</p>
+</div>
+
+<div class="right-panel">
+  <div class="form-container">
+    <h4 class="text-center mb-3">เข้าสู่ระบบ</h4>
+    
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <div class="mb-3">
+        <label class="form-label">ชื่อผู้ใช้</label>
+        <input type="text" class="form-control" formControlName="username" />
+      </div>
+      <div class="mb-3">
+        <label class="form-label">รหัสผ่าน</label>
+        <input type="password" class="form-control" formControlName="password" />
+      </div>
+      
+      <button type="submit" class="btn btn-primary w-100" [disabled]="loginForm.invalid">
+        เข้าสู่ระบบ
+      </button>
+
+      <div class="text-center mt-3">
+        <span>ยังไม่มีบัญชีใช่ไหม?</span>
+        <a routerLink="/register" class="btn btn-outline-secondary btn-sm mt-2 w-100">สมัครสมาชิก</a>
+      </div>
+    </form>
+    
+    <div *ngIf="errorMessage" class="text-danger mt-3 text-center">
+      {{ errorMessage }}
+    </div>
+  </div>
+</div>
