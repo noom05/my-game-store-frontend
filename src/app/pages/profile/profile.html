@@ -1,39 +1,54 @@
-<div class="container-fluid">
-  <div class="row">
-    <!-- Sidebar -->
-    <div class="col-lg-3 col-md-4 sidebar">
-      <ul class="menu-list">
-        <li class="active">โปรไฟล์</li>
-        <li>รอดำเนิน</li>
-        <li>ประวัติ</li>
-      </ul>
+<div class="main-container">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <ul class="nav-links">
+      <li><a routerLink="/profile" routerLinkActive="active"><i class="bi bi-person"></i><span>โปรไฟล์</span></a></li>
+      <li><a routerLink="/wallet" routerLinkActive="active"><i class="bi bi-wallet2"></i><span>กระเป๋าเงิน</span></a></li>
+      <li><a routerLink="/history" routerLinkActive="active"><i class="bi bi-clock-history"></i><span>ประวัติ</span></a></li>
+    </ul>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="content-wrapper">
+    <!-- แสดง Spinner ขณะกำลังโหลด -->
+    <div *ngIf="isLoading" class="d-flex justify-content-center align-items-center h-100">
+      <div class="spinner-border text-warning" role="status"></div>
     </div>
 
-    <!-- Main Content -->
-    <div class="col-lg-9 col-md-8">
-      <!-- Loading Spinner -->
-      <div *ngIf="isLoading" class="d-flex justify-content-center align-items-center" style="min-height: 300px;">
-        <div class="spinner-border text-warning" role="status">
-          <span class="visually-hidden">Loading...</span>
-        </div>
-      </div>
-
-      <!-- Error Message -->
-      <div *ngIf="!isLoading && errorMessage" class="alert alert-danger mt-4">
-        {{ errorMessage }}
-      </div>
-
-      <!-- Profile Content -->
-      <div *ngIf="!isLoading && userProfile && !errorMessage" class="main-content mt-4">
-        <img [src]="userProfile.imageUrl" class="profile-img" alt="Profile" />
-
-        <div class="account-info text-start mt-4">
-          <h5 class="mb-3">Account Info</h5>
-          <p class="info-label">NAME: <span>{{ userProfile.username || "-" }}</span></p>
-          <p class="info-label">EMAIL: <span>{{ userProfile.email }}</span></p>
-        </div>
-        <button class="edit-btn" (click)="editProfile()">แก้ไขข้อมูล</button>
-      </div>
+    <!-- แสดง Error ถ้ามี -->
+    <div *ngIf="errorMessage && !isLoading" class="alert alert-danger">
+      {{ errorMessage }}
     </div>
-  </div>
+
+    <!-- แสดงเนื้อหาเมื่อโหลดเสร็จ -->
+    <div *ngIf="userProfile && !isLoading">
+      <header class="profile-header">
+        <h1 class="profile-title">โปรไฟล์</h1>
+        <button class="edit-button" (click)="editProfile()">
+          <i class="bi bi-pencil-fill"></i> แก้ไขข้อมูล
+        </button>
+      </header>
+
+      <div class="profile-picture-wrapper">
+        <img [src]="userProfile.imageUrl" class="profile-picture" alt="Profile Picture">
+      </div>
+
+      <!-- v----------- จุดที่แก้ไข -----------v -->
+      <section class="account-info">
+        <h2 class="section-title">Account Info</h2>
+        <!-- แสดง Username -->
+        <div class="info-group">
+          <label class="info-label">USERNAME</label>
+          <div class="info-value">{{ userProfile.username }}</div>
+        </div>
+        <!-- แสดง Email -->
+        <div class="info-group">
+          <label class="info-label">EMAIL</label>
+          <div class="info-value">{{ userProfile.email }}</div>
+        </div>
+      </section>
+      <!-- ^----------- สิ้นสุดจุดที่แก้ไข -----------^ -->
+    </div>
+  </main>
 </div>
+

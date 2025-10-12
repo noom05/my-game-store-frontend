@@ -1,47 +1,114 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-
+import { Api } from '../../services/api';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-wallet',
+  standalone: true,
   imports: [CommonModule, RouterModule, ReactiveFormsModule],
   templateUrl: './wallet.html',
-  styleUrl: './wallet.css'
+  styleUrls: ['./wallet.css']
 })
 export class Wallet implements OnInit {
 
   walletForm!: FormGroup;
-  // เก็บราคาสำเร็จรูปไว้ใน Array เพื่อให้จัดการง่าย
-  presetAmounts: number[] = [20, 50, 100, 300, 500, 1000];
+  currentUser: any = null;
+  currentBalance: number | null = null;
+  isLoading = true;
+  errorMessage: string | null = null;
 
-  constructor(private fb: FormBuilder, private router: Router) { }
+  presetAmounts: number[] = [20, 50, 100, 300, 500, 1000];
+  private apiSubscription: Subscription | null = null;
+
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+    private api: Api,
+    private cdr: ChangeDetectorRef
+  ) { }
 
   ngOnInit(): void {
-    // สร้างฟอร์มด้วย FormControl 'amount'
     this.walletForm = this.fb.group({
       amount: ['', [Validators.required, Validators.min(1)]]
     });
+
+    this.loadInitialData();
   }
 
-  // ฟังก์ชันทำงานเมื่อกดปุ่มราคาสำเร็จรูป
+  loadInitialData(): void {
+    const userStr = localStorage.getItem('user');
+    if (!userStr) {
+      this.router.navigate(['/login']);
+      return;
+    }
+    this.currentUser = JSON.parse(userStr);
+    this.fetchWalletBalance();
+  }
+
+  fetchWalletBalance(): void {
+    this.isLoading = true;
+    this.errorMessage = null;
+
+    if (!this.currentUser?.uid) {
+        this.errorMessage = "User ID not found.";
+        this.isLoading = false;
+        return;
+    }
+    
+    this.apiSubscription = this.api.getWalletBalance(this.currentUser.uid).subscribe({
+      next: (data) => {
+        this.currentBalance = data.balance;
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        // ถ้าไม่เจอ wallet (404) ให้ถือว่ายอดเงินเป็น 0
+        if (err.status === 404) {
+            this.currentBalance = 0;
+        } else {
+            this.errorMessage = "ไม่สามารถโหลดข้อมูล Wallet ได้";
+        }
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
   selectAmount(amount: number): void {
-    // ใช้ setValue เพื่ออัปเดตค่าในฟอร์ม
     this.walletForm.get('amount')?.setValue(amount);
   }
 
-  // ฟังก์ชันทำงานเมื่อกดปุ่มยืนยัน
   onSubmit(): void {
     if (this.walletForm.invalid) {
       alert("กรุณากรอกจำนวนเงินที่ถูกต้อง");
       return;
     }
+
+    const amountToTopup = this.walletForm.value.amount;
+    const payload = {
+      user_id: this.currentUser.uid,
+      amount: amountToTopup
+    };
     
-    const amount = this.walletForm.value.amount;
-    alert(`ยืนยันการทำรายการจำนวน ${amount} บาทเรียบร้อยแล้ว`);
-    
-    // รีเซ็ตฟอร์มให้กลับเป็นค่าเริ่มต้น
-    this.walletForm.reset();
+    // Disable form to prevent double-submission
+    this.walletForm.disable();
+
+    this.api.topupWallet(payload).subscribe({
+      next: (response) => {
+        alert(`เติมเงินจำนวน ${amountToTopup} บาท สำเร็จ!`);
+        this.walletForm.reset();
+        this.walletForm.enable();
+        // โหลดข้อมูลยอดเงินใหม่
+        this.fetchWalletBalance(); 
+      },
+      error: (err) => {
+        console.error("Top-up failed:", err);
+        alert(`เกิดข้อผิดพลาด: ${err.error.error || 'ไม่สามารถเติมเงินได้'}`);
+        this.walletForm.enable();
+      }
+    });
   }
 }

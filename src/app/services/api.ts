@@ -3,12 +3,12 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class Api {
   private apiUrl = 'http://localhost:3000'; // URL หลักของ Backend
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   // --- Helper Function: สร้าง Header พร้อม Token ---
   private getAuthHeaders(): HttpHeaders | null {
@@ -19,7 +19,7 @@ export class Api {
       return null;
     }
     return new HttpHeaders({
-      'Authorization': `Bearer ${token}`
+      Authorization: `Bearer ${token}`,
     });
   }
 
@@ -34,48 +34,106 @@ export class Api {
 
   getUserProfile(id: string): Observable<any> {
     const headers = this.getAuthHeaders();
-    if (!headers) return throwError(() => new Error('No authorization token found'));
+    if (!headers)
+      return throwError(() => new Error('No authorization token found'));
     return this.http.get<any>(`${this.apiUrl}/user/${id}`, { headers });
   }
 
   // --- ฟังก์ชันสำหรับ Games ---
   getAllGames(): Observable<any[]> {
     const headers = this.getAuthHeaders();
-    if (!headers) return throwError(() => new Error('No authorization token found'));
+    if (!headers)
+      return throwError(() => new Error('No authorization token found'));
     return this.http.get<any[]>(`${this.apiUrl}/games`, { headers });
   }
 
   getGameById(id: string): Observable<any> {
     const headers = this.getAuthHeaders();
-    if (!headers) return throwError(() => new Error('No authorization token found'));
+    if (!headers)
+      return throwError(() => new Error('No authorization token found'));
     return this.http.get<any>(`${this.apiUrl}/games/${id}`, { headers });
   }
 
   createGame(gameData: FormData): Observable<any> {
     const headers = this.getAuthHeaders();
-    if (!headers) return throwError(() => new Error('No authorization token found'));
+    if (!headers)
+      return throwError(() => new Error('No authorization token found'));
     // สำหรับ FormData ไม่ต้องตั้ง Content-Type, browser จะจัดการให้เอง
-    return this.http.post<any>(`${this.apiUrl}/games`, gameData, { headers: headers });
+    return this.http.post<any>(`${this.apiUrl}/games`, gameData, {
+      headers: headers,
+    });
   }
 
   deleteGameById(id: string): Observable<any> {
     const headers = this.getAuthHeaders();
-    if (!headers) return throwError(() => new Error('No authorization token found'));
+    if (!headers)
+      return throwError(() => new Error('No authorization token found'));
     return this.http.delete<any>(`${this.apiUrl}/games/${id}`, { headers });
   }
 
   updateGame(id: string, gameData: FormData): Observable<any> {
     const headers = this.getAuthHeaders();
-    if (!headers) return throwError(() => new Error('No authorization token found'));
-    return this.http.put<any>(`${this.apiUrl}/games/${id}`, gameData, { headers });
+    if (!headers)
+      return throwError(() => new Error('No authorization token found'));
+    return this.http.put<any>(`${this.apiUrl}/games/${id}`, gameData, {
+      headers,
+    });
   }
 
   // --- ฟังก์ชันสำหรับ Types ---
   getAllTypes(): Observable<any[]> {
     const headers = this.getAuthHeaders();
-    if (!headers) return throwError(() => new Error('No authorization token found'));
+    if (!headers)
+      return throwError(() => new Error('No authorization token found'));
     // Endpoint นี้อยู่ใน games controller ของคุณ
     return this.http.get<any[]>(`${this.apiUrl}/games/types`, { headers });
   }
-}
 
+  getWalletBalance(userId: string): Observable<any> {
+    const headers = this.getAuthHeaders();
+    if (!headers)
+      return throwError(() => new Error('No authorization token found'));
+    return this.http.get<any>(`${this.apiUrl}/user/wallet/${userId}`, {
+      headers,
+    });
+  }
+
+  /**
+   * Tops up a user's wallet.
+   * @param payload An object containing user_id and amount.
+   */
+  topupWallet(payload: { user_id: string; amount: number }): Observable<any> {
+    const headers = this.getAuthHeaders();
+    if (!headers)
+      return throwError(() => new Error('No authorization token found'));
+    return this.http.post<any>(`${this.apiUrl}/user/wallet/topup`, payload, {
+      headers,
+    });
+  }
+
+  /**
+   * Purchases a game for a user.
+   * @param payload An object containing user_id and game_id.
+   */
+  purchaseGame(payload: { user_id: string; game_id: number }): Observable<any> {
+    const headers = this.getAuthHeaders();
+    if (!headers)
+      return throwError(() => new Error('No authorization token found'));
+    return this.http.post<any>(`${this.apiUrl}/user/wallet/purchase`, payload, {
+      headers,
+    });
+  }
+
+  /**
+   * Gets the transaction history for a user.
+   * @param userId The ID of the user.
+   */
+  getHistory(userId: string): Observable<any[]> {
+    const headers = this.getAuthHeaders();
+    if (!headers)
+      return throwError(() => new Error('No authorization token found'));
+    return this.http.get<any[]>(`${this.apiUrl}/user/history/${userId}`, {
+      headers,
+    });
+  }
+}

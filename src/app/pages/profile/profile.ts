@@ -1,76 +1,73 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { UserService } from '../../services/user';
+import { Api } from '../../services/api';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './profile.html',
-  styleUrl: './profile.css',
+  styleUrls: ['./profile.css']
 })
 export class Profile implements OnInit {
-  userProfile: any = null;
-  isLoading: boolean = true;
-  errorMessage: string | null = null;
 
-  constructor(private router: Router, private userService: UserService, private cdRef: ChangeDetectorRef) { }
+  userProfile: any = null;
+  isLoading = true;
+  errorMessage: string | null = null;
+  
+  private currentUser: any = null;
+
+  constructor(
+    private router: Router,
+    private api: Api,
+    private cdr: ChangeDetectorRef
+  ) { }
 
   ngOnInit(): void {
-    const user = this.userService.getUser();
-    const token = localStorage.getItem('token');
-
-    if (!user || !token) {
-      alert('กรุณาเข้าสู่ระบบก่อน');
+    const userStr = localStorage.getItem('user');
+    if (!userStr) {
       this.router.navigate(['/login']);
       return;
     }
-
-    this.userProfile = user;
-    this.loadUserProfile(user.uid, token);
+    this.currentUser = JSON.parse(userStr);
+    this.fetchUserProfile();
   }
 
-  async loadUserProfile(uid: string, token: string): Promise<void> {
-    this.isLoading = true;
-    this.errorMessage = null;
-
-    try {
-      const res = await fetch(
-        `http://localhost:3000/user/${uid}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      if (!res.ok) {
-        throw new Error('โหลดข้อมูลโปรไฟล์ไม่สำเร็จ');
-      }
-
-      const data = await res.json();
-
-      this.userProfile = {
-        ...data,
-        imageUrl: data.profile
-          ? `http://localhost:3000/uploads/${data.profile}`
-          : 'http://placehold.co/140x140?text=No+Image',
-      };
-
-      console.log('📦 userProfile:', this.userProfile);
-
-      // อัปเดตสถานะผู้ใช้ใน UserService ด้วยข้อมูลล่าสุด
-      this.userService.setUser(this.userProfile);
-    } catch (err: any) {
-      this.errorMessage = err.message;
-      console.error('❌ Error loading user profile:', err);
-    } finally {
+  fetchUserProfile(): void {
+    if (!this.currentUser?.uid) {
+      this.errorMessage = "User ID not found.";
       this.isLoading = false;
-      console.log(' Done loading');
-      this.cdRef.detectChanges();
+      return;
     }
+
+    this.api.getUserProfile(this.currentUser.uid).subscribe({
+      next: (data) => {
+        this.userProfile = {
+          ...data,
+          imageUrl: this.normalizeImageUrl(data.profile)
+        };
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.errorMessage = "ไม่สามารถโหลดข้อมูลโปรไฟล์ได้";
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  private normalizeImageUrl(imageFile: string | null): string {
+    const placeholder = 'https://placehold.co/200x200/EFEFEF/777777?text=Profile';
+    if (!imageFile) return placeholder;
+    return `http://localhost:3000/uploads/${imageFile}`;
   }
 
   editProfile(): void {
-    this.router.navigate(['/edit-profile']);
+    if (this.userProfile) {
+      this.router.navigate(['/edit-profile', this.userProfile.uid]);
+    }
   }
 }
+
