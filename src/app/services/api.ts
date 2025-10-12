@@ -6,7 +6,7 @@ import { Observable, throwError } from 'rxjs';
   providedIn: 'root',
 })
 export class Api {
-  private apiUrl = 'http://localhost:3000'; // URL หลักของ Backend
+  private apiUrl = 'https://games-database-main.onrender.com'; // URL หลักของ Backend
 
   constructor(private http: HttpClient) {}
 
