@@ -1,37 +1,46 @@
-<div class="left-panel">
-  <h2>ยินดีต้อนรับสู่ GameShop</h2>
-  <div class="profile-circle"></div>
-  <p>สมัครสมาชิกเพื่อเริ่มต้นประสบการณ์การเล่นเกมของคุณ</p>
-</div>
+<div class="register-container">
+  <div class="info-panel">
+    <h2>ยินดีต้อนรับสู่ GameShop</h2>
+    <p>สมัครสมาชิกเพื่อเริ่มต้นประสบการณ์การเล่นเกมของคุณ</p>
+  </div>
 
-<div class="right-panel">
-  <div class="form-container">
-    <h4 class="text-center mb-3">สมัครสมาชิก</h4>
-    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
-      <div class="mb-3">
-        <label class="form-label">ชื่อผู้ใช้</label>
-        <input type="text" class="form-control" formControlName="username" />
-      </div>
-      <div class="mb-3">
-        <label class="form-label">อีเมล</label>
-        <input type="email" class="form-control" formControlName="email" />
-      </div>
-      <div class="mb-3">
-        <label class="form-label">รหัสผ่าน</label>
-        <input type="password" class="form-control" formControlName="password" />
-      </div>
+  <div class="form-panel">
+    <div class="form-container">
+      <h4 class="text-center mb-3">สมัครสมาชิก</h4>
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+        <div class="mb-3">
+          <label class="form-label">ชื่อผู้ใช้</label>
+          <input type="text" class="form-control" formControlName="username" />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">อีเมล</label>
+          <input type="email" class="form-control" formControlName="email" />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">รหัสผ่าน</label>
+          <input
+            type="password"
+            class="form-control"
+            formControlName="password"
+          />
+        </div>
 
-      <button type="submit" class="btn btn-success w-100">สมัครสมาชิก</button>
-      <button type="button" class="btn btn-outline-secondary w-100 mt-2" routerLink="/login">
-        กลับไปหน้าเข้าสู่ระบบ
-      </button>
-    </form>
+        <button type="submit" class="btn btn-success w-100">สมัครสมาชิก</button>
+        <button
+          type="button"
+          class="btn btn-outline-secondary w-100 mt-2"
+          routerLink="/login"
+        >
+          กลับไปหน้าเข้าสู่ระบบ
+        </button>
+      </form>
 
-    <div *ngIf="errorMessage" class="text-danger mt-3 text-center">
-      {{ errorMessage }}
-    </div>
-    <div *ngIf="successMessage" class="text-success mt-3 text-center">
-      {{ successMessage }}
+      <div *ngIf="errorMessage" class="text-danger mt-3 text-center">
+        {{ errorMessage }}
+      </div>
+      <div *ngIf="successMessage" class="text-success mt-3 text-center">
+        {{ successMessage }}
+      </div>
     </div>
   </div>
 </div>

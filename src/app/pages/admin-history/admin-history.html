@@ -1,0 +1,45 @@
+<div class="container my-5">
+  <h1 class="mb-4">ประวัติการทำรายการทั้งหมด (Admin)</h1>
+
+  <!-- แสดง Spinner ขณะโหลด -->
+  <div *ngIf="isLoading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status"></div>
+  </div>
+
+  <!-- แสดง Error ถ้ามี -->
+  <div *ngIf="errorMessage && !isLoading" class="alert alert-danger">
+    {{ errorMessage }}
+  </div>
+
+  <!-- แสดงตารางข้อมูลเมื่อโหลดเสร็จ -->
+  <div *ngIf="!isLoading && !errorMessage" class="table-responsive">
+    <table class="table table-hover align-middle">
+      <thead class="table-dark">
+        <tr>
+          <th>ID</th>
+          <th>ผู้ใช้</th>
+          <th>ประเภท</th>
+          <th>เกม</th>
+          <th>จำนวนเงิน</th>
+          <th>วันที่</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of allTransactions">
+          <td>{{ item.id }}</td>
+          <td>{{ item.username }}</td>
+          <td>
+            <span *ngIf="item.type === 'topup'" class="badge bg-success">เติมเงิน</span>
+            <span *ngIf="item.type === 'purchase'" class="badge bg-info">ซื้อเกม</span>
+          </td>
+          <td>{{ item.game_name || '-' }}</td>
+          <td>{{ item.amount | currency:'฿' }}</td>
+          <td>{{ formatDate(item.transaction_date) }}</td>
+        </tr>
+        <tr *ngIf="allTransactions.length === 0">
+            <td colspan="6" class="text-center text-muted">ไม่พบข้อมูลการทำรายการ</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

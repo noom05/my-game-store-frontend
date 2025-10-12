@@ -34,7 +34,6 @@ export class AddGame implements OnInit {
       game_name: ['', Validators.required],
       price: ['', [Validators.required, Validators.min(0)]],
       description: ['', Validators.required],
-      release_date: ['', Validators.required],
       type_ids: this.fb.array([], Validators.required)
     });
 

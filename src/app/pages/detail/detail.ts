@@ -2,7 +2,8 @@ import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Api } from '../../services/api';
-import { Subscription } from 'rxjs';
+import { AuthService } from '../../services/auth';
+import { Subscription, take } from 'rxjs';
 
 @Component({
   selector: 'app-detail',
@@ -17,17 +18,25 @@ export class Detail implements OnInit, OnDestroy {
   gameId: string | null = null;
   isLoading = true;
   errorMessage: string | null = null;
+  isPurchasing = false;
 
   private apiSubscription: Subscription | null = null;
+  private currentUser: any = null;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private api: Api,
+    private authService: AuthService,
     private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      this.currentUser = JSON.parse(userStr);
+    }
+
     this.gameId = this.route.snapshot.paramMap.get('id');
     if (!this.gameId) {
       this.router.navigate(['/dashboard']);
@@ -59,8 +68,6 @@ export class Detail implements OnInit, OnDestroy {
     this.errorMessage = null;
     this.apiSubscription = this.api.getGameById(id).subscribe({
       next: (data) => {
-        // v----------- จุดที่แก้ไข -----------v
-        // แยก categories ที่เป็น string 'Action, RPG' ออกมาเป็น Array ['Action', 'RPG']
         const categoryArray = data.categories ? data.categories.split(',').map((item: string) => item.trim()) : [];
         
         this.game = {
@@ -68,11 +75,10 @@ export class Detail implements OnInit, OnDestroy {
           title: data.game_name || 'N/A',
           description: data.description || '',
           releaseDate: this.formatDate(data.release_date),
-          genre: categoryArray, // <--- ใช้ Array ที่เราเพิ่งสร้าง
+          genre: categoryArray,
           price: Number(data.price || 0),
           image: this.normalizeImageUrl(data.image)
         };
-        // ^----------- สิ้นสุดจุดที่แก้ไข -----------^
 
         this.isLoading = false;
         this.cdr.detectChanges();
@@ -111,12 +117,67 @@ export class Detail implements OnInit, OnDestroy {
     if (confirm('คุณแน่ใจว่าต้องการลบเกมนี้ใช่หรือไม่?')) {
       this.api.deleteGameById(this.gameId).subscribe({
         next: () => {
-          alert('✅ ลบเกมเรียบร้อยแล้ว');
+          alert('ลบเกมเรียบร้อยแล้ว');
           this.router.navigate(['/dashboard']);
         },
         error: (err) => alert('เกิดข้อผิดพลาดในการลบเกม'),
       });
     }
+  }
+
+  purchaseGame(): void {
+    if (!this.currentUser || !this.game) {
+      alert('กรุณาเข้าสู่ระบบก่อน');
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    this.authService.currentUser$.pipe(take(1)).subscribe(currentUserWithBalance => {
+
+      const userBalance = currentUserWithBalance?.balance ?? 0;
+
+      if (userBalance < this.game.price) {
+          if (confirm('ยอดเงินของคุณไม่เพียงพอ ต้องการไปที่หน้าเติมเงินหรือไม่?')) {
+              this.router.navigate(['/wallet']);
+          }
+          return;
+      }
+
+      if (!confirm(`คุณต้องการซื้อเกม "${this.game.title}" ในราคา ${this.game.price} บาท หรือไม่?`)) {
+        return;
+      }
+
+      this.isPurchasing = true;
+      this.cdr.detectChanges();
+
+      const payload = {
+        user_id: this.currentUser.uid,
+        game_id: this.game.id
+      };
+
+      this.api.purchaseGame(payload).subscribe({
+        next: (response) => {
+          alert(` ซื้อเกม "${this.game.title}" สำเร็จ!`);
+          this.authService.updateBalance(response.balance);
+          this.isPurchasing = false;
+          this.router.navigate(['/history']); 
+        },
+        error: (err) => {
+          console.error('Purchase failed:', err);
+          this.isPurchasing = false;
+          const errorMessage = err.error?.error || 'ไม่สามารถซื้อเกมได้';
+
+          if (errorMessage.toLowerCase().includes('not enough balance')) {
+              if (confirm('ยอดเงินของคุณไม่เพียงพอ ต้องการไปที่หน้าเติมเงินหรือไม่?')) {
+                  this.router.navigate(['/wallet']);
+              }
+          } else {
+              alert(`เกิดข้อผิดพลาด: ${errorMessage}`);
+          }
+          this.cdr.detectChanges(); // สั่งให้อัปเดตหน้าเว็บเมื่อเกิด Error
+        }
+      });
+    });
   }
 }
 

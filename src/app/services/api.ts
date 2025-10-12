@@ -99,6 +99,16 @@ export class Api {
     });
   }
 
+  /**
+   * ดึงข้อมูลประวัติการทำรายการทั้งหมดสำหรับ Admin
+   */
+  getAdminHistory(): Observable<any[]> {
+    const headers = this.getAuthHeaders();
+    if (!headers) return throwError(() => new Error('No authorization token found'));
+    // Endpoint นี้อยู่ใน user controller ของคุณ
+    return this.http.get<any[]>(`${this.apiUrl}/user/admin/history`, { headers });
+  }
+
   // --- ฟังก์ชันสำหรับ Types ---
   getAllTypes(): Observable<any[]> {
     const headers = this.getAuthHeaders();

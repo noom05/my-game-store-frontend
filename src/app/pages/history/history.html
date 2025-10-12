@@ -1,1 +1,54 @@
-<p>history works!</p>
+<div class="main-container">
+  <aside class="sidebar">
+    <ul class="nav-links">
+      <li><a routerLink="/profile"><i class="bi bi-person"></i><span>โปรไฟล์</span></a></li>
+      <li><a routerLink="/wallet"><i class="bi bi-wallet2"></i><span>กระเป๋าเงิน</span></a></li>
+      <li><a routerLink="/history" routerLinkActive="active"><i class="bi bi-clock-history"></i><span>ประวัติ</span></a></li>
+    </ul>
+  </aside>
+
+  <section class="history-section">
+    <div *ngIf="isLoading" class="text-center py-5">
+      <div class="spinner-border text-primary" role="status"></div>
+      <p class="mt-2">กำลังโหลดประวัติ...</p>
+    </div>
+
+    <div *ngIf="errorMessage && !isLoading" class="alert alert-danger">
+      {{ errorMessage }}
+    </div>
+
+    <div *ngIf="!isLoading && !errorMessage">
+      <div class="history-card">
+        <h2 class="card-title">ประวัติการเติมเงิน</h2>
+        <ul *ngIf="topupHistory.length > 0; else noTopup" class="list-group list-group-flush">
+          <li *ngFor="let item of topupHistory" class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+              <div class="fw-bold">เติมเงินเข้าสู่ระบบ</div>
+              <div class="text-muted small">{{ formatDate(item.transaction_date) }}</div>
+            </div>
+            <span class="badge bg-success rounded-pill">+{{ item.amount | currency:'฿':'symbol':'1.0-0' }}</span>
+          </li>
+        </ul>
+        <ng-template #noTopup>
+          <p class="text-center text-muted p-3">ยังไม่มีประวัติการเติมเงิน</p>
+        </ng-template>
+      </div>
+
+      <div class="history-card mt-4">
+        <h2 class="card-title">ประวัติการซื้อ</h2>
+        <ul *ngIf="purchaseHistory.length > 0; else noPurchase" class="list-group list-group-flush">
+          <li *ngFor="let item of purchaseHistory" class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+              <div class="fw-bold">ซื้อเกม: {{ item.game_name || 'N/A' }}</div>
+              <div class="text-muted small">{{ formatDate(item.transaction_date) }}</div>
+            </div>
+            <span class="badge bg-danger rounded-pill">-{{ item.amount | currency:'฿':'symbol':'1.0-0' }}</span>
+          </li>
+        </ul>
+        <ng-template #noPurchase>
+          <p class="text-center text-muted p-3">ยังไม่มีประวัติการซื้อเกม</p>
+        </ng-template>
+      </div>
+    </div>
+  </section>
+</div>

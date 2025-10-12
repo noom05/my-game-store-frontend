@@ -1,48 +1,41 @@
-<!-- ส่วนแสดงผลหลัก -->
 <div class="container my-5">
 
-  <!-- แสดง Spinner ขณะกำลังโหลด -->
   <div *ngIf="isLoading" class="d-flex justify-content-center align-items-center" style="min-height: 50vh;">
     <div class="spinner-border text-warning" role="status">
       <span class="visually-hidden">Loading...</span>
     </div>
   </div>
 
-  <!-- แสดง Error ถ้ามี -->
   <div *ngIf="errorMessage && !isLoading" class="alert alert-danger text-center">
     {{ errorMessage }}
   </div>
 
-  <!-- แสดงเนื้อหาเมื่อโหลดเสร็จแล้ว -->
   <div *ngIf="game && !isLoading" class="row g-5">
     
-    <!-- คอลัมน์ซ้าย: รูปภาพเกม -->
     <div class="col-lg-6">
       <img [src]="game.image" [alt]="game.title" class="game-image img-fluid">
     </div>
 
-    <!-- คอลัมน์ขวา: ข้อมูลเกม -->
     <div class="col-lg-6">
       <h1 class="game-title">{{ game.title }}</h1>
       <p class="game-description">{{ game.description }}</p>
       <p class="release-date"><strong>วันที่วางจำหน่าย:</strong> {{ game.releaseDate }}</p>
 
-      <!-- ส่วนแสดง Tag ประเภทเกม -->
       <div class="category-tags mb-4">
         <span *ngFor="let category of game.genre" class="badge bg-secondary me-2">{{ category }}</span>
       </div>
 
       <p class="price">{{ game.price | currency:'฿':'symbol':'1.2-2' }}</p>
 
-      <!-- ปุ่มสำหรับผู้ใช้ทั่วไป -->
       <div *ngIf="!isAdmin" class="action-buttons d-flex align-items-center gap-3">
-        <button class="btn btn-dark btn-buy">ซื้อ</button>
-        <button class="btn btn-outline-dark btn-cart">
+        <button class="btn btn-dark btn-buy" (click)="purchaseGame()" [disabled]="isPurchasing">
+          <span *ngIf="!isPurchasing">ซื้อ</span>
+          <span *ngIf="isPurchasing" class="spinner-border spinner-border-sm"></span>
+        </button>
+        <button class="btn btn-outline-dark btn-cart" (click)="purchaseGame()" [disabled]="isPurchasing">
           <i class="bi bi-cart-plus"></i> เพิ่มไปยังรถเข็น
         </button>
       </div>
-
-      <!-- ปุ่มสำหรับผู้ดูแลระบบ -->
       <div *ngIf="isAdmin" class="action-buttons d-flex align-items-center gap-3">
         <a [routerLink]="['/edit-game', gameId]" class="btn btn-warning">
             <i class="bi bi-pencil-square"></i> แก้ไข

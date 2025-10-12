@@ -11,6 +11,7 @@ import { Wallet } from './pages/wallet/wallet';
 import { History } from './pages/history/history';
 import { Pagenotfound } from './pages/pagenotfound/pagenotfound';
 import { EditProfile } from './pages/edit-profile/edit-profile';
+import { AdminHistory } from './pages/admin-history/admin-history';
 
 export const routes: Routes = [
     // --- Main Routes ---
@@ -24,6 +25,7 @@ export const routes: Routes = [
     { path: 'edit-profile/:id', component: EditProfile },
     { path: 'wallet', component: Wallet },
     { path: 'history', component: History },
+    { path: 'admin-history', component: AdminHistory},
 
     // --- Special Routes --
     { path: '', redirectTo: '/dashboard', pathMatch: 'full' },

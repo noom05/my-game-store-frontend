@@ -1,54 +1,83 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
 import { Router } from '@angular/router';
+import { Api } from './api'; // Import Api service
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  // เก็บข้อมูลผู้ใช้เป็น BehaviorSubject เพื่อให้ component อัพเดตทันที
-  private currentUserSubject = new BehaviorSubject<any>(this.loadUserFromStorage());
-  public currentUser$ = this.currentUserSubject.asObservable();
+  // --- ประกาศสถานะ ---
+  private loggedIn = new BehaviorSubject<boolean>(this.hasToken());
+  private currentUser = new BehaviorSubject<any>(this.getUserFromStorage());
 
-  // isLoggedIn สร้างจาก currentUser เพื่อให้สถานะสอดคล้องเสมอ
-  public isLoggedIn$: Observable<boolean> = this.currentUser$.pipe(map(u => !!u));
+  // --- "คลื่นวิทยุ" ที่ Component อื่นจะมาเปิดฟัง ---
+  isLoggedIn$: Observable<boolean> = this.loggedIn.asObservable();
+  currentUser$: Observable<any> = this.currentUser.asObservable();
 
-  constructor(private router: Router) {}
-
-  // อ่าน user จาก localStorage อย่างปลอดภัย
-  private loadUserFromStorage(): any {
-    try {
-      const raw = localStorage.getItem('user');
-      return raw ? JSON.parse(raw) : null;
-    } catch {
-      return null;
+  constructor(private router: Router, private api: Api) {
+    // เมื่อผู้ใช้ล็อกอินอยู่ ให้ไปดึงยอดเงินล่าสุดเสมอ
+    if (this.loggedIn.value) {
+      this.refreshBalance();
     }
   }
 
-  // เรียกหลังจาก login สำเร็จ ให้ backend ส่ง token และ user object
+  // --- ฟังก์ชันภายใน ---
+  private hasToken(): boolean {
+    return !!localStorage.getItem('token');
+  }
+
+  private getUserFromStorage(): any {
+    const userStr = localStorage.getItem('user');
+    return userStr ? JSON.parse(userStr) : null;
+  }
+
+  // --- ฟังก์ชันสาธารณะ ---
   login(token: string, user: any): void {
-    if (token) localStorage.setItem('token', token);
-    if (user) localStorage.setItem('user', JSON.stringify(user));
-    this.currentUserSubject.next(user);
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(user));
+    // ประกาศข่าว: ล็อกอินแล้ว! และนี่คือข้อมูลผู้ใช้!
+    this.loggedIn.next(true);
+    this.currentUser.next(user); 
+    this.refreshBalance(); // ดึงยอดเงินล่าสุดหลังล็อกอิน
     this.router.navigate(['/dashboard']);
   }
 
-  // ล็อกเอาต์: เคลียร์ storage และ broadcast ค่า null
   logout(): void {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    this.currentUserSubject.next(null);
+    // ประกาศข่าว: ล็อกเอาต์แล้ว! และไม่มีผู้ใช้แล้ว!
+    this.loggedIn.next(false);
+    this.currentUser.next(null);
     this.router.navigate(['/login']);
   }
 
-  // ถ้ามีการเปลี่ยน localStorage จากนอก (เช่น tab อื่น) ให้เรียกฟังก์ชันนี้เพื่อ sync
-  updateFromStorage(): void {
-    this.currentUserSubject.next(this.loadUserFromStorage());
+  // v----------- ฟังก์ชันที่เพิ่มเข้ามา (นี่คือส่วนที่แก้ Error) -----------v
+  /**
+   * ดึงข้อมูลยอดเงินล่าสุดจาก API
+   */
+  refreshBalance(): void {
+    const user = this.currentUser.value;
+    if (user && user.uid) {
+      // เรียก API เพื่อขอยอดเงิน
+      this.api.getWalletBalance(user.uid).subscribe({
+        next: (wallet) => this.updateBalance(wallet.balance),
+        error: () => this.updateBalance(0) // ถ้าไม่มี wallet ให้ยอดเงินเป็น 0
+      });
+    }
   }
 
-  // คืนค่า token ปัจจุบัน (ถ้าจำเป็นสำหรับการเรียก API)
-  getToken(): string | null {
-    return localStorage.getItem('token');
+  /**
+   * อัปเดตยอดเงินในสถานะปัจจุบันและประกาศให้ Component อื่นทราบ
+   * @param newBalance ยอดเงินใหม่
+   */
+  updateBalance(newBalance: number): void {
+    const user = this.currentUser.value;
+    if (user) {
+      // สร้าง object ใหม่พร้อม balance ที่อัปเดต
+      const updatedUser = { ...user, balance: newBalance };
+      // ประกาศข้อมูลผู้ใช้ที่อัปเดตแล้ว
+      this.currentUser.next(updatedUser);
+    }
   }
 }
