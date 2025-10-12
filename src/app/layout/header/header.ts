@@ -1,36 +1,35 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
-import { UserService } from '../../services/user';
+import { RouterModule, Router } from '@angular/router';
+import { AuthService } from '../../services/auth';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [ CommonModule, RouterModule ],
   templateUrl: './header.html',
-  styleUrl: './header.css'
+  styleUrls: ['./header.css']
 })
-export class Header implements OnInit {
-  isLoggedIn: boolean = false;
-  isAdmin: boolean = false;
-  user: any = null;
+export class Header {
+  public isAdmin$: Observable<boolean>;
+  public isLoggedIn$: Observable<boolean>;
 
-  constructor(private router: Router, private userService: UserService) {}
-
-  ngOnInit(): void {
-    // โหลดสถานะผู้ใช้จาก localStorage (ครั้งแรก)
-    this.userService.loadUserFromStorage();
-
-    // Subscribe เพื่อรับการเปลี่ยนแปลงแบบ real-time
-    this.userService.currentUser$.subscribe(user => {
-      this.user = user;
-      this.isLoggedIn = !!user;
-      this.isAdmin = user?.role === 'admin';
-    });
+  constructor(
+    public authService: AuthService,
+    private router: Router
+  ) {
+    // expose Observable ตรงจาก service ให้ template ใช้ได้ทันที
+    this.isLoggedIn$ = this.authService.isLoggedIn$;
+    this.isAdmin$ = this.authService.currentUser$.pipe(
+      map(user => user?.role === 'admin')
+    );
   }
 
   logout(): void {
-    this.userService.clearUser();
+    this.authService.logout();
+    // นำทางไปหน้า login/หน้าหลักหลัง logout
     this.router.navigate(['/login']);
   }
 }

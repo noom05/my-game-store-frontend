@@ -93,7 +93,6 @@ export class Wallet implements OnInit {
       amount: amountToTopup
     };
     
-    // Disable form to prevent double-submission
     this.walletForm.disable();
 
     this.api.topupWallet(payload).subscribe({
@@ -101,7 +100,6 @@ export class Wallet implements OnInit {
         alert(`เติมเงินจำนวน ${amountToTopup} บาท สำเร็จ!`);
         this.walletForm.reset();
         this.walletForm.enable();
-        // โหลดข้อมูลยอดเงินใหม่
         this.fetchWalletBalance(); 
       },
       error: (err) => {

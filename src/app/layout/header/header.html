@@ -1,50 +1,39 @@
-<nav *ngIf="isLoggedIn" class="navbar navbar-expand-lg px-4">
-  <a class="navbar-brand" routerLink="/dashboard">
-    <i class="bi bi-controller me-2"></i>GameStore
-  </a>
-  <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-    <span class="navbar-toggler-icon"></span>
-  </button>
-  <div class="collapse navbar-collapse" id="navbarNav">
+<ng-container *ngIf="authService.currentUser$ | async as user; else guestNav">
+  <nav class="navbar navbar-expand-lg px-4">
+    <a class="navbar-brand" routerLink="/dashboard">
+      <i class="bi bi-controller me-2"></i>GameStore
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
 
-    <ul class="navbar-nav me-auto">
-      <li class="nav-item">
-        <a class="nav-link" routerLink="/dashboard">หน้าหลัก</a>
-      </li>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item"><a class="nav-link" routerLink="/dashboard">หน้าหลัก</a></li>
 
-      <ng-container *ngIf="isAdmin; else userMenu">
-        <li class="nav-item">
-          <a class="nav-link" routerLink="/transactions">ประวัติการทำธุรกรรม</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" routerLink="/discounts">โค้ดส่วนลด</a>
-        </li>
-      </ng-container>
+        <ng-container *ngIf="user.role === 'admin'; else userMenu">
+          <li class="nav-item"><a class="nav-link" routerLink="/history">ประวัติการทำธุรกรรม</a></li>
+        </ng-container>
+        <ng-template #userMenu>
+          <li class="nav-item"><a class="nav-link" routerLink="/library">คลังเกม</a></li>
+        </ng-template>
+      </ul>
 
-      <ng-template #userMenu>
-        <li class="nav-item">
-          <a class="nav-link" routerLink="/library">คลัง</a>
-        </li>
-      </ng-template>
-    </ul>
+      <ul class="navbar-nav d-flex align-items-center">
+        <li class="nav-item me-3"><a class="nav-link" routerLink="/cart"><i class="bi bi-cart"></i> ตะกร้า</a></li>
+        <li class="nav-item me-3"><a class="nav-link" routerLink="/profile"><i class="bi bi-person-circle"></i> โปรไฟล์</a></li>
+        <li class="nav-item me-3"><span class="nav-link text-white">ยินดีต้อนรับ, {{ user.username }}</span></li>
+        <li class="nav-item"><button class="btn btn-sm btn-danger" (click)="logout()">ออกจากระบบ</button></li>
+      </ul>
+    </div>
+  </nav>
+</ng-container>
 
-    <ul class="navbar-nav d-flex align-items-center">
-      <li class="nav-item me-3">
-        <a class="nav-link" routerLink="/cart"><i class="bi bi-cart"></i> ตะกร้า</a>
-      </li>
-      <li class="nav-item me-3">
-        <a class="nav-link" routerLink="/profile"><i class="bi bi-person-circle"></i> โปรไฟล์</a>
-      </li>
-      <li class="nav-item me-3">
-        <span class="nav-link">ยินดีต้อนรับ, {{ user?.username }}</span>
-      </li>
-      <li class="nav-item">
-        <button class="btn btn-sm btn-danger" (click)="logout()">ออกจากระบบ</button>
-      </li>
-    </ul>
+<ng-template #guestNav>
+  <div class="navbar navbar-dark bg-dark px-4">
+    <a class="navbar-brand" routerLink="/">
+      <i class="bi bi-controller me-2"></i>GameStore
+    </a>
+    <a class="btn btn-sm btn-primary" routerLink="/login">เข้าสู่ระบบ</a>
   </div>
-</nav>
-
-<div *ngIf="!isLoggedIn" class="text-end px-4 py-3 bg-dark">
-  <a class="btn btn-sm btn-primary" routerLink="/login">เข้าสู่ระบบ</a>
-</div>
+</ng-template>
