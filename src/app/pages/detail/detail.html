@@ -1,40 +1,57 @@
-<div *ngIf="game" class="container">
-  <div class="detail-section row align-items-stretch">
-    <div class="col-md-5">
-      <img [src]="game.image" [alt]="game.title" class="game-image" />
-    </div>
+<!-- ส่วนแสดงผลหลัก -->
+<div class="container my-5">
 
-    <div class="col-md-7 d-flex flex-column">
-      <h3>{{ game.title }}</h3>
-      <p class="mt-3">{{ game.description }}</p>
-      <p><strong>วันวางจำหน่าย:</strong> {{ game.releaseDate }}</p>
-      <p><strong>จำนวนที่เหลือ:</strong> {{ game.stock }} ชิ้น</p>
-      <p><strong>ประเภท:</strong> {{ game.genre }}</p>
-      <p><strong>ราคา:</strong> {{ game.price | currency:'THB':'symbol':'1.2-2' }}</p>
-      
-      <div class="mt-auto">
-        <div *ngIf="!isAdmin" class="action-buttons d-flex gap-2 justify-content-end">
-          <button class="btn btn-primary">
-            <i class="bi bi-cart-plus"></i> เพิ่มไปยังรถเข็น
-          </button>
-          <button class="btn btn-success">
-            <i class="bi bi-credit-card"></i> ซื้อทันที
-          </button>
-        </div>
-
-        <div *ngIf="isAdmin" class="action-buttons d-flex gap-2 justify-content-end">
-          <a [routerLink]="['/edit-game', gameId]" class="btn btn-warning">
-            <i class="bi bi-pencil-square"></i> แก้ไข
-          </a>
-          <button class="btn btn-outline-danger" (click)="confirmDelete()">
-            <i class="bi bi-trash"></i> ลบ
-          </button>
-        </div>
-      </div>
+  <!-- แสดง Spinner ขณะกำลังโหลด -->
+  <div *ngIf="isLoading" class="d-flex justify-content-center align-items-center" style="min-height: 50vh;">
+    <div class="spinner-border text-warning" role="status">
+      <span class="visually-hidden">Loading...</span>
     </div>
   </div>
-</div>
 
-<div *ngIf="!game" class="text-center mt-5">
-  <p>กำลังโหลดข้อมูล...</p>
+  <!-- แสดง Error ถ้ามี -->
+  <div *ngIf="errorMessage && !isLoading" class="alert alert-danger text-center">
+    {{ errorMessage }}
+  </div>
+
+  <!-- แสดงเนื้อหาเมื่อโหลดเสร็จแล้ว -->
+  <div *ngIf="game && !isLoading" class="row g-5">
+    
+    <!-- คอลัมน์ซ้าย: รูปภาพเกม -->
+    <div class="col-lg-6">
+      <img [src]="game.image" [alt]="game.title" class="game-image img-fluid">
+    </div>
+
+    <!-- คอลัมน์ขวา: ข้อมูลเกม -->
+    <div class="col-lg-6">
+      <h1 class="game-title">{{ game.title }}</h1>
+      <p class="game-description">{{ game.description }}</p>
+      <p class="release-date"><strong>วันที่วางจำหน่าย:</strong> {{ game.releaseDate }}</p>
+
+      <!-- ส่วนแสดง Tag ประเภทเกม -->
+      <div class="category-tags mb-4">
+        <span *ngFor="let category of game.genre" class="badge bg-secondary me-2">{{ category }}</span>
+      </div>
+
+      <p class="price">{{ game.price | currency:'฿':'symbol':'1.2-2' }}</p>
+
+      <!-- ปุ่มสำหรับผู้ใช้ทั่วไป -->
+      <div *ngIf="!isAdmin" class="action-buttons d-flex align-items-center gap-3">
+        <button class="btn btn-dark btn-buy">ซื้อ</button>
+        <button class="btn btn-outline-dark btn-cart">
+          <i class="bi bi-cart-plus"></i> เพิ่มไปยังรถเข็น
+        </button>
+      </div>
+
+      <!-- ปุ่มสำหรับผู้ดูแลระบบ -->
+      <div *ngIf="isAdmin" class="action-buttons d-flex align-items-center gap-3">
+        <a [routerLink]="['/edit-game', gameId]" class="btn btn-warning">
+            <i class="bi bi-pencil-square"></i> แก้ไข
+        </a>
+        <button class="btn btn-outline-danger" (click)="confirmDelete()">
+            <i class="bi bi-trash"></i> ลบ
+        </button>
+      </div>
+
+    </div>
+  </div>
 </div>

@@ -1,78 +1,122 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-
-// Mock Data: ในโปรเจกต์จริง ข้อมูลนี้ควรมาจาก Service ที่เรียก API
-const GAMES_DATA: { [key: string]: any } = {
-  fc26: {
-    title: 'EA SPORTS FC™ 26 ULTIMATE EDITION',
-    description: `ครอบคลุมที่สุดกับประสบการณ์การเล่น EA SPORTS FC™ 26...`,
-    releaseDate: '26 กันยายน 2025',
-    stock: 4,
-    genre: 'กีฬา / ฟุตบอล',
-    price: 1999,
-    image: '/assets/fc26.jpg',
-  },
-  battlefield: {
-    title: 'Battlefield 2042',
-    description:
-      'เกมยิงสุดมันส์ในสนามรบแห่งอนาคต พร้อมโหมดผู้เล่นหลายคนที่เข้มข้น',
-    releaseDate: '15 พฤศจิกายน 2023',
-    stock: 12,
-    genre: 'ยิง / แอคชั่น',
-    price: 1050,
-    image: '/assets/battlefield.jpg',
-  },
-};
+import { Api } from '../../services/api';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-detail',
+  standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './detail.html',
-  styleUrl: './detail.css',
+  styleUrls: ['./detail.css'],
 })
-export class Detail implements OnInit {
+export class Detail implements OnInit, OnDestroy {
   game: any = null;
-  isAdmin: boolean = false;
+  isAdmin = false;
   gameId: string | null = null;
+  isLoading = true;
+  errorMessage: string | null = null;
+
+  private apiSubscription: Subscription | null = null;
 
   constructor(
-    private route: ActivatedRoute, // Service สำหรับดึงข้อมูลจาก URL
-    private router: Router
-  ) {}
+    private route: ActivatedRoute,
+    private router: Router,
+    private api: Api,
+    private cdr: ChangeDetectorRef
+  ) { }
 
   ngOnInit(): void {
-    // 1. ดึง ID ของเกมจาก URL (เช่น /detail/fc26)
-    const gameId = this.route.snapshot.paramMap.get('id');
-
-    if (gameId) {
-      // 2. ค้นหาข้อมูลเกมจาก ID ที่ได้มา
-      this.game = GAMES_DATA[gameId];
-    }
-
-    // 3. ถ้าไม่พบข้อมูลเกม ให้ redirect กลับไปหน้า dashboard
-    if (!this.game) {
-      alert('ไม่พบข้อมูลเกมนี้');
+    this.gameId = this.route.snapshot.paramMap.get('id');
+    if (!this.gameId) {
       this.router.navigate(['/dashboard']);
       return;
     }
 
-    // 4. เช็ก role ของผู้ใช้จาก localStorage เพื่อแสดงปุ่มที่ถูกต้อง
+    this.checkUserRole();
+    this.fetchGameData(this.gameId);
+  }
+
+  ngOnDestroy(): void {
+    this.apiSubscription?.unsubscribe();
+  }
+
+  private checkUserRole(): void {
     const userStr = localStorage.getItem('user');
     if (userStr) {
-      const user = JSON.parse(userStr);
-      if (user && user.role === 'admin') {
-        this.isAdmin = true;
+      try {
+        const user = JSON.parse(userStr);
+        this.isAdmin = user?.role === 'admin';
+      } catch {
+        this.isAdmin = false;
       }
     }
   }
 
-  // ฟังก์ชันสำหรับยืนยันการลบเกม
+  fetchGameData(id: string): void {
+    this.isLoading = true;
+    this.errorMessage = null;
+    this.apiSubscription = this.api.getGameById(id).subscribe({
+      next: (data) => {
+        // v----------- จุดที่แก้ไข -----------v
+        // แยก categories ที่เป็น string 'Action, RPG' ออกมาเป็น Array ['Action', 'RPG']
+        const categoryArray = data.categories ? data.categories.split(',').map((item: string) => item.trim()) : [];
+        
+        this.game = {
+          id: data.id,
+          title: data.game_name || 'N/A',
+          description: data.description || '',
+          releaseDate: this.formatDate(data.release_date),
+          genre: categoryArray, // <--- ใช้ Array ที่เราเพิ่งสร้าง
+          price: Number(data.price || 0),
+          image: this.normalizeImageUrl(data.image)
+        };
+        // ^----------- สิ้นสุดจุดที่แก้ไข -----------^
+
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Failed to load game details:', err);
+        this.errorMessage = 'ไม่สามารถโหลดข้อมูลเกมได้';
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  private formatDate(dateStr: string | null): string {
+    if (!dateStr) return 'ไม่ระบุ';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('th-TH', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  }
+
+  private normalizeImageUrl(imageFile: string | null): string {
+    const placeholder = 'https://placehold.co/600x800/212529/EFEFEF?text=No+Image';
+    if (!imageFile) return placeholder;
+    return `${this.apiBaseUrl()}/uploads/${imageFile}`;
+  }
+
+  private apiBaseUrl(): string {
+    return 'http://localhost:3000';
+  }
+
   confirmDelete(): void {
+    if (!this.isAdmin || !this.gameId) return;
     if (confirm('คุณแน่ใจว่าต้องการลบเกมนี้ใช่หรือไม่?')) {
-      // ในโปรเจกต์จริง ส่วนนี้จะเป็นการเรียก API เพื่อลบข้อมูล
-      alert('✅ ลบเกมเรียบร้อยแล้ว');
-      this.router.navigate(['/dashboard']);
+      this.api.deleteGameById(this.gameId).subscribe({
+        next: () => {
+          alert('✅ ลบเกมเรียบร้อยแล้ว');
+          this.router.navigate(['/dashboard']);
+        },
+        error: (err) => alert('เกิดข้อผิดพลาดในการลบเกม'),
+      });
     }
   }
 }
+

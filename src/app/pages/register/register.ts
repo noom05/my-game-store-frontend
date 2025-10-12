@@ -1,9 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { CommonModule } from '@angular/common';
 import { Api } from '../../services/api';
-import { finalize } from 'rxjs/operators';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-register',
@@ -16,7 +15,6 @@ export class Register implements OnInit {
   registerForm!: FormGroup;
   errorMessage: string | null = null;
   successMessage: string | null = null;
-  loading = false;
 
   constructor(
     private fb: FormBuilder,
@@ -32,40 +30,39 @@ export class Register implements OnInit {
     });
   }
 
-  // <<< แก้ตรงนี้ ให้คืน any >>>
-  get f(): any {
-    return this.registerForm.controls;
-  }
-
+  // v----------- จุดที่แก้ไข -----------v
   onSubmit(): void {
-    this.errorMessage = null;
-    this.successMessage = null;
-
     if (this.registerForm.invalid) {
-      Object.values(this.f).forEach((control: any) => control.markAsTouched());
       this.errorMessage = 'กรุณากรอกข้อมูลให้ครบถ้วนและถูกต้อง';
       return;
     }
 
-    const payload = {
-      username: this.f.username.value,
-      email: this.f.email.value,
-      password: this.f.password.value
-    };
+    this.errorMessage = null;
+    this.successMessage = null;
 
-    this.loading = true;
-    this.api.register(payload)
-      .pipe(finalize(() => (this.loading = false)))
-      .subscribe({
-        next: (response) => {
-          this.successMessage = '✅ สมัครสมาชิกสำเร็จ! กำลังนำท่านไปหน้าเข้าสู่ระบบ...';
-          setTimeout(() => this.router.navigate(['/login']), 1500);
-        },
-        error: (err) => {
-          console.error('Register error:', err);
-          this.errorMessage = err?.error?.error || err?.message || 'เกิดข้อผิดพลาดในการสมัครสมาชิก';
-        }
-      });
+    // 1. สร้าง "กล่องพัสดุ" (FormData)
+    const formData = new FormData();
+    
+    // 2. นำข้อมูลจากฟอร์มมา "ใส่กล่อง"
+    formData.append('username', this.registerForm.value.username);
+    formData.append('email', this.registerForm.value.email);
+    formData.append('password', this.registerForm.value.password);
+    // (ในอนาคตถ้ามีช่องเลือกไฟล์ ก็สามารถ append ไฟล์เข้ามาตรงนี้ได้เลย)
+    // formData.append('file', this.selectedFile);
+
+    // 3. ส่ง "กล่องพัสดุ" ไปให้พนักงานเสิร์ฟ
+    this.api.register(formData).subscribe({
+      next: (response) => {
+        this.successMessage = "✅ สมัครสมาชิกสำเร็จ! กำลังนำท่านไปหน้าเข้าสู่ระบบ...";
+        setTimeout(() => {
+          this.router.navigate(['/login']);
+        }, 2000);
+      },
+      error: (err) => {
+        console.error('Register error:', err);
+        this.errorMessage = err.error?.error || 'เกิดข้อผิดพลาดในการสมัครสมาชิก';
+      }
+    });
   }
+  // ^----------- สิ้นสุดจุดที่แก้ไข -----------^
 }
-

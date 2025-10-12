@@ -1,62 +1,81 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class Api {
-  private apiUrl = 'http://localhost:3000';
+  private apiUrl = 'http://localhost:3000'; // URL หลักของ Backend
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
+
+  // --- Helper Function: สร้าง Header พร้อม Token ---
+  private getAuthHeaders(): HttpHeaders | null {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.error('API Service: No token found in local storage.');
+      // ส่งค่า null เพื่อให้ฟังก์ชันที่เรียกใช้จัดการต่อ
+      return null;
+    }
+    return new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+  }
 
   // --- ฟังก์ชันสำหรับ User ---
   login(credentials: any): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/user/login`, credentials);
   }
 
-  register(data: any): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/user/register`, data);
+  register(userData: FormData): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/user/register`, userData);
+  }
+
+  getUserProfile(id: string): Observable<any> {
+    const headers = this.getAuthHeaders();
+    if (!headers) return throwError(() => new Error('No authorization token found'));
+    return this.http.get<any>(`${this.apiUrl}/user/${id}`, { headers });
   }
 
   // --- ฟังก์ชันสำหรับ Games ---
   getAllGames(): Observable<any[]> {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      return new Observable((observer) => {
-        observer.error('No token found in local storage');
-      });
-    }
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${token}`,
-    });
+    const headers = this.getAuthHeaders();
+    if (!headers) return throwError(() => new Error('No authorization token found'));
+    return this.http.get<any[]>(`${this.apiUrl}/games`, { headers });
+  }
 
-    // เพิ่ม timestamp ที่ไม่ซ้ำกันต่อท้าย URL เพื่อบังคับให้โหลดใหม่เสมอ
-    const timestamp = new Date().getTime();
-    return this.http.get<any[]>(`${this.apiUrl}/games?t=${timestamp}`, {
-      headers: headers,
-    });
+  getGameById(id: string): Observable<any> {
+    const headers = this.getAuthHeaders();
+    if (!headers) return throwError(() => new Error('No authorization token found'));
+    return this.http.get<any>(`${this.apiUrl}/games/${id}`, { headers });
+  }
+
+  createGame(gameData: FormData): Observable<any> {
+    const headers = this.getAuthHeaders();
+    if (!headers) return throwError(() => new Error('No authorization token found'));
+    // สำหรับ FormData ไม่ต้องตั้ง Content-Type, browser จะจัดการให้เอง
+    return this.http.post<any>(`${this.apiUrl}/games`, gameData, { headers: headers });
+  }
+
+  deleteGameById(id: string): Observable<any> {
+    const headers = this.getAuthHeaders();
+    if (!headers) return throwError(() => new Error('No authorization token found'));
+    return this.http.delete<any>(`${this.apiUrl}/games/${id}`, { headers });
+  }
+
+  updateGame(id: string, gameData: FormData): Observable<any> {
+    const headers = this.getAuthHeaders();
+    if (!headers) return throwError(() => new Error('No authorization token found'));
+    return this.http.put<any>(`${this.apiUrl}/games/${id}`, gameData, { headers });
   }
 
   // --- ฟังก์ชันสำหรับ Types ---
   getAllTypes(): Observable<any[]> {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      console.warn('No token found when calling getAllTypes');
-      return new Observable((observer) => observer.error('No token found'));
-    }
-    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
-    console.log('Requesting /games/types with headers', headers);
+    const headers = this.getAuthHeaders();
+    if (!headers) return throwError(() => new Error('No authorization token found'));
+    // Endpoint นี้อยู่ใน games controller ของคุณ
     return this.http.get<any[]>(`${this.apiUrl}/games/types`, { headers });
   }
-
-  // --- ฟังก์ชันอื่นๆ ---
-  createGame(gameData: FormData, token: string): Observable<any> {
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${token}`,
-    });
-    return this.http.post<any>(`${this.apiUrl}/games`, gameData, {
-      headers: headers,
-    });
-  }
 }
+

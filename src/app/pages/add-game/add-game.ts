@@ -156,7 +156,7 @@ export class AddGame implements OnInit {
       return;
     }
 
-    this.api.createGame(formData, token).subscribe({
+    this.api.createGame(formData).subscribe({
       next: (response) => {
         alert('✅ เพิ่มเกมเรียบร้อยแล้ว!');
         this.router.navigate(['/dashboard']);
