@@ -1,34 +1,111 @@
 body {
-        background-color: #f8f9fa;
-        font-family: "Segoe UI", sans-serif;
-      }
+  background-color: #f8f9fa;
+  font-family: "Segoe UI", sans-serif;
+}
 
-      .navbar {
-        background-color: #ff6600;
-      }
+.navbar {
+  background-color: #ff6600;
+}
 
-      .navbar .nav-link,
-      .navbar .navbar-brand {
-        color: white !important;
-        font-weight: bold;
-      }
+.navbar .nav-link,
+.navbar .navbar-brand {
+  color: white !important;
+  font-weight: bold;
+}
 
-      .form-section {
-        background-color: white;
-        border-radius: 10px;
-        padding: 30px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        margin-top: 30px;
-      }
+.form-section {
+  background-color: white;
+  border-radius: 10px;
+  padding: 30px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  margin-top: 30px;
+}
 
-      .image-placeholder {
-        width: 100%;
-        height: 200px;
-        background-color: #e9ecef;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.2rem;
-        color: #6c757d;
-      }
+.image-placeholder {
+  width: 100%;
+  height: 200px;
+  background-color: #e9ecef;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: #6c757d;
+}
+
+/* ทำให้ container ของประเภทเด่นขึ้นและไม่ถูกซ่อน */
+.form-section .types-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+/* แต่ละตัวเลือกให้ดูเหมือน badge เล็ก ๆ เพื่อมองเห็นง่าย */
+.form-section .types-list label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  background: #f1f3f5;
+  color: #212529;
+  cursor: pointer;
+  user-select: none;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+/* ปรับขนาด checkbox ให้ใหญ่ขึ้นเล็กน้อย */
+.form-section .types-list input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  transform: translateY(-1px);
+}
+
+/* สถานะถูกเลือกให้เห็นชัด */
+.form-section .types-list input[type="checkbox"]:checked+span {
+  font-weight: 600;
+  color: #0d6efd;
+}
+
+/* กรณีรูป preview ให้มี border และขนาดคงที่ */
+#imagePreview {
+  width: 100%;
+  height: 200px;
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e9ecef;
+  border: 1px dashed rgba(0, 0, 0, 0.06);
+}
+
+#imagePreview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ป้องกันปุ่มถูกซ่อนเมื่อใช้ flex column */
+.col-md-7.d-flex.flex-column {
+  min-height: 520px;
+}
+
+/* ให้ textarea/inputs ดูเด่นบนพื้นขาว */
+.form-control {
+  background: #fff;
+  border-radius: 6px;
+}
+
+/* ตรวจสอบ responsive */
+@media (max-width: 767px) {
+  .form-section {
+    padding: 20px;
+  }
+
+  #imagePreview {
+    height: 180px;
+  }
+}
