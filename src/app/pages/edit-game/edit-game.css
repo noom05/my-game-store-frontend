@@ -31,3 +31,25 @@
   object-fit: cover;
   border-radius: 10px;
 }
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  min-width: 150px;
+  transition: all 0.2s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-buttons .btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  min-width: 180px;
+}
+
+.btn-warning {
+    color: #212529;
+}
