@@ -1,18 +1,19 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
 import { Api } from '../../services/api';
 import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-wallet',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, HttpClientModule],
   templateUrl: './wallet.html',
   styleUrls: ['./wallet.css']
 })
-export class Wallet implements OnInit {
+export class Wallet implements OnInit, OnDestroy {
 
   walletForm!: FormGroup;
   currentUser: any = null;
@@ -38,13 +39,28 @@ export class Wallet implements OnInit {
     this.loadInitialData();
   }
 
+  ngOnDestroy(): void {
+    if (this.apiSubscription) {
+      this.apiSubscription.unsubscribe();
+      this.apiSubscription = null;
+    }
+  }
+
   loadInitialData(): void {
     const userStr = localStorage.getItem('user');
     if (!userStr) {
       this.router.navigate(['/login']);
       return;
     }
-    this.currentUser = JSON.parse(userStr);
+    try {
+      this.currentUser = JSON.parse(userStr);
+    } catch {
+      this.currentUser = null;
+    }
+    if (!this.currentUser) {
+      this.router.navigate(['/login']);
+      return;
+    }
     this.fetchWalletBalance();
   }
 
@@ -57,19 +73,25 @@ export class Wallet implements OnInit {
         this.isLoading = false;
         return;
     }
+
+    // unsubscribe เก่าแล้วค่อย subscribe ใหม่
+    if (this.apiSubscription) {
+      this.apiSubscription.unsubscribe();
+      this.apiSubscription = null;
+    }
     
-    this.apiSubscription = this.api.getWalletBalance(this.currentUser.uid).subscribe({
+    this.apiSubscription = this.api.getWalletBalance(String(this.currentUser.uid)).subscribe({
       next: (data) => {
-        this.currentBalance = data.balance;
+        this.currentBalance = data?.balance ?? 0;
         this.isLoading = false;
         this.cdr.detectChanges();
       },
       error: (err) => {
-        // ถ้าไม่เจอ wallet (404) ให้ถือว่ายอดเงินเป็น 0
-        if (err.status === 404) {
+        if (err && err.status === 404) {
             this.currentBalance = 0;
         } else {
             this.errorMessage = "ไม่สามารถโหลดข้อมูล Wallet ได้";
+            console.error('fetchWalletBalance error:', err);
         }
         this.isLoading = false;
         this.cdr.detectChanges();
@@ -89,22 +111,29 @@ export class Wallet implements OnInit {
 
     const amountToTopup = this.walletForm.value.amount;
     const payload = {
-      user_id: this.currentUser.uid,
-      amount: amountToTopup
+      user_id: String(this.currentUser.uid),
+      amount: Number(amountToTopup)
     };
     
     this.walletForm.disable();
 
-    this.api.topupWallet(payload).subscribe({
+    // unsubscribe เก่า ถ้ามี
+    if (this.apiSubscription) {
+      this.apiSubscription.unsubscribe();
+      this.apiSubscription = null;
+    }
+
+    this.apiSubscription = this.api.topupWallet(payload).subscribe({
       next: (response) => {
-        alert(`เติมเงินจำนวน ${amountToTopup} บาท สำเร็จ!`);
+        alert(`เติมเงินจำนวน ${payload.amount} บาท สำเร็จ!`);
         this.walletForm.reset();
         this.walletForm.enable();
         this.fetchWalletBalance(); 
       },
       error: (err) => {
         console.error("Top-up failed:", err);
-        alert(`เกิดข้อผิดพลาด: ${err.error.error || 'ไม่สามารถเติมเงินได้'}`);
+        const errMsg = err?.error?.error || err?.message || 'ไม่สามารถเติมเงินได้';
+        alert(`เกิดข้อผิดพลาด: ${errMsg}`);
         this.walletForm.enable();
       }
     });
