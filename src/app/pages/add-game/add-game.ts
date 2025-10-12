@@ -101,7 +101,7 @@ export class AddGame implements OnInit {
     
     const typeIds = this.addGameForm.value.type_ids;
     for (const typeId of typeIds) {
-      formData.append('type_ids[]', typeId);
+      formData.append('type_ids', JSON.stringify(typeIds));
     }
     
     formData.append('file', this.selectedFile, this.selectedFile.name);
