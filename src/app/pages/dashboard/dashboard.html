@@ -1,6 +1,5 @@
 <!-- ส่วนแสดงผลหลัก -->
 <div class="container-fluid px-md-5 py-4">
-
   <!-- แสดง Spinner ขณะกำลังโหลด -->
   <div *ngIf="isLoading" class="text-center py-5">
     <div class="spinner-border text-warning" role="status">
@@ -17,8 +16,9 @@
   <!-- แสดงเนื้อหาเมื่อโหลดเสร็จแล้ว -->
   <div *ngIf="!isLoading && !errorMessage">
     <!-- Banner -->
-    <div class="banner mb-5" style="background-image: url('https://games-database-main.onrender.com/assets/fc26.jpg');">
-    </div>
+    <div class="banner mb-5"
+      [style.background-image]="'url(https://gaming-cdn.com/images/products/19691/616x353/ea-sports-fc-26-pc-ea-app-cover.jpg?v=1758868329)'"
+      role="img" aria-label="EA Sports FC 26 banner"></div>
 
     <!-- ปุ่มเพิ่มเกมสำหรับ Admin -->
     <div *ngIf="isAdmin" class="d-flex justify-content-end mb-4">
@@ -34,12 +34,14 @@
         <div *ngFor="let game of bestSellerGames" class="col">
           <a [routerLink]="['/detail', game.id]" class="game-card-link">
             <div class="card game-card h-100">
-              <img [src]="game.imageUrl" class="card-img-top" [alt]="game.game_name">
+              <img [src]="game.imageUrl" class="card-img-top" [alt]="game.game_name" />
               <div class="card-body">
                 <h5 class="card-title">{{ game.game_name }}</h5>
               </div>
               <div class="card-footer">
-                <span class="price">{{ game.price | currency:'฿':'symbol':'1.0-0' }}</span>
+                <span class="price">{{
+                  game.price | currency : "฿" : "symbol" : "1.0-0"
+                  }}</span>
                 <button class="btn cart-btn" (click)="addToCart($event, game.id)">
                   <i class="bi bi-cart-plus"></i>
                 </button>
@@ -56,7 +58,8 @@
         <h2 class="section-title">All Games</h2>
         <!-- Search Bar -->
         <div class="search-bar">
-          <input #searchInput type="text" class="form-control" placeholder="ค้นหาเกม..." (keyup.enter)="searchGame(searchInput.value)">
+          <input #searchInput type="text" class="form-control" placeholder="ค้นหาเกม..."
+            (keyup.enter)="searchGame(searchInput.value)" />
           <button class="btn btn-warning" (click)="searchGame(searchInput.value)">
             <i class="bi bi-search"></i>
           </button>
@@ -67,13 +70,15 @@
         <div *ngFor="let game of filteredGames" class="col">
           <a [routerLink]="['/detail', game.id]" class="game-card-link">
             <div class="card game-card h-100">
-              <img [src]="game.imageUrl" class="card-img-top" [alt]="game.game_name">
+              <img [src]="game.imageUrl" class="card-img-top" [alt]="game.game_name" />
               <div class="card-body">
                 <h5 class="card-title">{{ game.game_name }}</h5>
                 <p class="card-text categories">{{ game.categories }}</p>
               </div>
               <div class="card-footer">
-                <span class="price">{{ game.price | currency:'฿':'symbol':'1.0-0' }}</span>
+                <span class="price">{{
+                  game.price | currency : "฿" : "symbol" : "1.0-0"
+                  }}</span>
                 <button class="btn cart-btn" (click)="addToCart($event, game.id)">
                   <i class="bi bi-cart-plus"></i>
                 </button>
