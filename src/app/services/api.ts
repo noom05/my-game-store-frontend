@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class Api {
-  // private apiUrl = 'http://localhost:3000';
-  private apiUrl = 'https://games-database-main.onrender.com';  // URL หลักของ Backend
+  private apiUrl = 'https://games-database-main.onrender.com'; // URL หลักของ Backend
 
   constructor(private http: HttpClient) {}
 
