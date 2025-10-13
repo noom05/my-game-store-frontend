@@ -110,3 +110,20 @@
 .game-card .cart-btn:hover {
   background-color: #ffca2c;
 }
+
+.search-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.search-bar {
+  flex-grow: 1;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.filter-dropdown {
+  min-width: 160px;
+}

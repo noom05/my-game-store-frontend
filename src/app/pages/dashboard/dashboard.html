@@ -56,13 +56,23 @@
     <section>
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h2 class="section-title">All Games</h2>
-        <!-- Search Bar -->
-        <div class="search-bar">
-          <input #searchInput type="text" class="form-control" placeholder="ค้นหาเกม..."
-            (keyup.enter)="searchGame(searchInput.value)" />
-          <button class="btn btn-warning" (click)="searchGame(searchInput.value)">
-            <i class="bi bi-search"></i>
-          </button>
+
+
+        <div class="search-filter-bar d-flex flex-wrap gap-2 align-items-center mb-3">
+
+          <select class="form-select filter-dropdown" (change)="filterByType($event)" aria-label="Filter games by type">
+            <option value="all" selected>ทุกประเภท</option>
+            <option *ngFor="let type of allTypes" [value]="type.id">{{ type.type_name }}</option>
+          </select>
+
+          <!-- Search Bar -->
+          <div class="search-bar d-flex flex-grow-1">
+            <input #searchInput type="text" class="form-control" placeholder="ค้นหาเกม..."
+              (keyup.enter)="searchGame(searchInput.value)" />
+            <button class="btn btn-warning" (click)="searchGame(searchInput.value)">
+              <i class="bi bi-search"></i>
+            </button>
+          </div>
         </div>
       </div>
 
