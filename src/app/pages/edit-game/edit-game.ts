@@ -68,7 +68,7 @@ export class EditGame implements OnInit {
         });
         
         // 5. ตั้งค่ารูปภาพเดิม
-        this.imagePreview = `http://localhost:3000/uploads/${game.image}`;
+        this.imagePreview = `https://games-database-main.onrender.com/uploads/${game.image}`;
 
         // 6. ตั้งค่า Checkbox ของประเภทเกมเดิม
         const gameTypeIds = game.categories ? game.categories.split(',').map((name: string) => {

@@ -61,7 +61,7 @@ export class Profile implements OnInit {
   private normalizeImageUrl(imageFile: string | null): string {
     const placeholder = 'https://placehold.co/200x200/EFEFEF/777777?text=Profile';
     if (!imageFile) return placeholder;
-    return `http://localhost:3000/uploads/${imageFile}`;
+    return `https://games-database-main.onrender.com/uploads/${imageFile}`;
   }
 
   editProfile(): void {

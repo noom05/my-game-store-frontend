@@ -81,7 +81,7 @@ export class EditProfile implements OnInit {
     this.isSaving = true;
     this.errorMessage = null;
 
-    const url = `http://localhost:3000/user/${this.uid}`;
+    const url = `https://games-database-main.onrender.com/user/${this.uid}`;
     const headers = { Authorization: `Bearer ${this.token}` };
 
     const file = this.getSelectedFile();
@@ -137,7 +137,7 @@ export class EditProfile implements OnInit {
     this.isLoading = true;
     this.errorMessage = null;
 
-    const url = `http://localhost:3000/user/${this.uid}`;
+    const url = `https://games-database-main.onrender.com/user/${this.uid}`;
     const headers = new HttpHeaders({ Authorization: `Bearer ${this.token}` });
 
     this.http.get<any>(url, { headers, observe: 'response' }).subscribe({

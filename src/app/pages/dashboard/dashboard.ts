@@ -58,7 +58,7 @@ export class Dashboard implements OnInit {
 
         this.allGames = data.map(game => ({
           ...game,
-          imageUrl: `http://localhost:3000/uploads/${game.image}`
+          imageUrl: `https://games-database-main.onrender.com/uploads/${game.image}`
         }));
         
         this.filteredGames = this.allGames;
