@@ -1,0 +1,57 @@
+<div class="container">
+  <h2>จัดการโค้ดส่วนลด</h2>
+
+  <div class="header-actions">
+    <a routerLink="/create-discount" class="btn-create">สร้างโค้ดใหม่</a>
+  </div>
+
+  <div *ngIf="isLoading" class="message">กำลังโหลดข้อมูล...</div>
+  <div *ngIf="errorMessage" class="message error">{{ errorMessage }}</div>
+
+  <div *ngIf="!isLoading && codes.length === 0" class="message">
+    ยังไม่มีโค้ดส่วนลดในระบบ
+  </div>
+
+  <table *ngIf="!isLoading && codes.length > 0">
+    <thead>
+      <tr>
+        <th>โค้ด (Code)</th>
+        <th>ประเภท</th>
+        <th>มูลค่า</th>
+        <th>จำนวนสิทธิ์ (ใช้ไป/ทั้งหมด)</th>
+        <th>วันหมดอายุ</th>
+        <th>สถานะ</th>
+        <th>จัดการ</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let code of codes">
+        <td>{{ code.code }}</td>
+        <td>{{ code.discount_type }}</td>
+        <td>
+          {{ code.discount_value }}
+          {{ code.discount_type === "percent" ? "%" : "บาท" }}
+        </td>
+        <td>{{ code.current_uses }} / {{ code.max_uses }}</td>
+        <td>
+          {{ code.expiry_date ? (code.expiry_date | date : "short") : "-" }}
+        </td>
+        <td>
+          <span [class]="code.is_active ? 'status-active' : 'status-inactive'">
+            {{ code.is_active ? "ใช้งานได้" : "ปิดใช้งาน" }}
+          </span>
+        </td>
+        <td>
+          <!-- ปุ่มแก้ไข (ใหม่) -->
+          <a [routerLink]="['/edit-discount', code.id]" class="btn-edit">
+            แก้ไข
+          </a>
+
+          <button (click)="deleteCode(code.id, code.code)" class="btn-delete">
+            ลบ
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

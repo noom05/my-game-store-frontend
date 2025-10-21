@@ -12,6 +12,9 @@ import { History } from './pages/history/history';
 import { Pagenotfound } from './pages/pagenotfound/pagenotfound';
 import { EditProfile } from './pages/edit-profile/edit-profile';
 import { AdminHistory } from './pages/admin-history/admin-history';
+import { CreateDiscount } from './pages/create-discount/create-discount';
+import { DiscountList } from './pages/discount-list/discount-list';
+import { EditDiscount } from './pages/edit-discount/edit-discount';
 
 export const routes: Routes = [
     // --- Main Routes ---
@@ -25,7 +28,10 @@ export const routes: Routes = [
     { path: 'edit-profile/:id', component: EditProfile },
     { path: 'wallet', component: Wallet },
     { path: 'history', component: History },
-    { path: 'admin-history', component: AdminHistory},
+    { path: 'admin-history', component: AdminHistory },
+    { path: 'create-discount', component: CreateDiscount },
+    { path: 'discount-list', component: DiscountList },
+    { path: 'edit-discount/:id', component: EditDiscount }, 
 
     // --- Special Routes --
     { path: '', redirectTo: '/dashboard', pathMatch: 'full' },

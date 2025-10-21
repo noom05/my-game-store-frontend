@@ -109,7 +109,8 @@ export class Detail implements OnInit, OnDestroy {
   }
 
   private apiBaseUrl(): string {
-    return 'https://games-database-main.onrender.com';
+    // return 'https://games-database-main.onrender.com';
+    return 'http://localhost:3000';
   }
 
   confirmDelete(): void {

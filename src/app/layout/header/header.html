@@ -13,6 +13,8 @@
 
         <ng-container *ngIf="user.role === 'admin'; else userMenu">
           <li class="nav-item"><a class="nav-link" routerLink="/admin-history">ประวัติการทำธุรกรรม</a></li>
+          <li class="nav-item"><a class="nav-link" routerLink="/create-discount">สร้างโค้ดส่วนลด</a></li>
+          <li class="nav-item"><a class="nav-link" routerLink="/discount-list">จัดการโค้ดส่วนลด</a></li>
         </ng-container>
         <ng-template #userMenu>
           <li class="nav-item"><a class="nav-link" routerLink="/library">คลังเกม</a></li>

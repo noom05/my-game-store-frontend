@@ -8,8 +8,9 @@ import { environment } from '../../environments/environment';
 })
 export class Api {
   // private apiUrl = 'https://games-database-main.onrender.com';
-  private apiUrl = 'https://games-database-main.onrender.com';
-   // URL หลักของ Backend
+  // private apiUrl = 'http://localhost:3000';
+  private apiUrl = 'http://localhost:3000';
+  // URL หลักของ Backend
 
   constructor(private http: HttpClient) {}
 
@@ -145,5 +146,44 @@ export class Api {
     return this.http.post<any>(`${this.apiUrl}/user/wallet/purchase`, payload, {
       headers,
     });
+  }
+
+  /**
+   * [POST] สร้างโค้ดส่วนลดใหม่
+   * @param payload ข้อมูลโค้ด
+   */
+  createDiscountCode(payload: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/discount`, payload);
+  }
+
+  /**
+   * [GET] ดึงโค้ดส่วนลดทั้งหมด
+   */
+  getAllDiscountCodes(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/discount`);
+  }
+
+  /**
+ * [GET] ดึงข้อมูลโค้ด 1 ตัวด้วย ID
+ */
+getDiscountCodeById(id: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/discount/${id}`, {
+    });
+}
+
+/**
+ * [PUT] อัปเดตข้อมูลโค้ด
+ */
+updateDiscountCode(id: number, payload: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/discount/${id}`, payload, {
+    });
+}
+
+  /**
+   * [DELETE] ลบโค้ดส่วนลด
+   * @param id ID ของโค้ดที่จะลบ
+   */
+  deleteDiscountCode(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/discount/${id}`);
   }
 }

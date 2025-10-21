@@ -1,0 +1,70 @@
+<div class="container">
+  <h2>แก้ไขโค้ดส่วนลด (Admin)</h2>
+
+  <form [formGroup]="discountForm" (ngSubmit)="onSubmit()">
+    
+    <!-- Code -->
+    <div class="form-group">
+      <label for="code">โค้ด (เช่น "NEWYEAR100")</label>
+      <input type="text" id="code" formControlName="code" placeholder="NEWYEAR100">
+      <div *ngIf="discountForm.get('code')?.invalid && discountForm.get('code')?.touched" class="error-text">
+        ต้องใส่โค้ดอย่างน้อย 4 ตัวอักษร
+      </div>
+    </div>
+
+    <!-- Type -->
+    <div class="form-group">
+      <label for="discount_type">ประเภทส่วนลด</label>
+      <select id="discount_type" formControlName="discount_type">
+        <option value="fixed">ลดแบบคงที่ (บาท)</option>
+        <option value="percent">ลดแบบเปอร์เซ็นต์ (%)</option>
+      </select>
+    </div>
+
+    <!-- Value (ส่วนที่แก้ไข) -->
+    <div class="form-group">
+      <!-- 1. เปลี่ยน Label เป็นตัวแปร (valueLabel) -->
+      <label for="discount_value">{{ valueLabel }}</label>
+      
+      <!-- 2. เปลี่ยน Placeholder ให้ฉลาดขึ้น -->
+      <input type="number" 
+             id="discount_value" 
+             formControlName="discount_value" 
+             [placeholder]="discountForm.get('discount_type')?.value === 'percent' ? 'เช่น 10 (สำหรับ 10%)' : 'เช่น 100 (สำหรับ 100 บาท)'">
+      
+      <!-- 3. เพิ่ม Error message ให้ฉลาดขึ้น -->
+      <div *ngIf="discountForm.get('discount_value')?.invalid && discountForm.get('discount_value')?.touched" class="error-text">
+        <span *ngIf="discountForm.get('discount_value')?.errors?.['required']">ต้องใส่มูลค่า</span>
+        <span *ngIf="discountForm.get('discount_value')?.errors?.['min']">มูลค่าต้องมากกว่า 0</span>
+        <span *ngIf="discountForm.get('discount_value')?.errors?.['max']">เปอร์เซ็นต์ต้องไม่เกิน 100</span>
+      </div>
+    </div>
+
+    <!-- Max Uses -->
+    <div class="form-group">
+      <label for="max_uses">จำนวนสิทธิ์สูงสุด</label>
+      <input type="number" id="max_uses" formControlName="max_uses">
+    </div>
+
+    <!-- Expiry Date -->
+    <div class="form-group">
+      <label for="expiry_date">วันหมดอายุ (Optional)</label>
+      <input type="datetime-local" id="expiry_date" formControlName="expiry_date">
+    </div>
+
+    <!-- Submit Button -->
+    <button type="submit" [disabled]="discountForm.invalid || isLoading">
+      {{ isLoading ? 'กำลังบันทึก...' : 'แก้ไข' }}
+    </button>
+
+  </form>
+
+  <!-- Messages -->
+  <div *ngIf="successMessage" class="message success">
+    {{ successMessage }}
+  </div>
+  <div *ngIf="errorMessage" class="message error">
+    {{ errorMessage }}
+  </div>
+
+</div>
