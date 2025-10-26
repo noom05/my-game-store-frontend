@@ -48,7 +48,7 @@
 
       <!-- เมนูขวา -->
       <ul class="navbar-nav nav-actions">
-        <li class="nav-item">
+        <li class="nav-item" *ngIf="user.role !== 'admin'">
           <a class="nav-link action-icon" routerLink="/cart" title="ตะกร้า">
             <i class="bi bi-cart3"></i>
             <span class="badge"></span>

@@ -71,12 +71,12 @@
                   <span class="price">{{ game.price | currency:'฿':'symbol':'1.0-0' }}</span>
 
                   <!-- ถ้ายังไม่ได้ซื้อ -->
-                  <button *ngIf="!game.isPurchased" class="btn cart-btn" (click)="addToCart($event, game.id)">
+                  <button *ngIf="!game.isPurchased && !isAdmin" class="btn cart-btn" (click)="addToCart($event, game.id)">
                     <i class="bi bi-cart-plus"></i>
                   </button>
 
                   <!-- ถ้าซื้อแล้ว -->
-                  <span *ngIf="game.isPurchased" class="badge bg-success">
+                  <span *ngIf="game.isPurchased && !isAdmin" class="badge bg-success">
                     <i class="bi bi-check-circle me-1"></i> ซื้อแล้ว
                   </span>
                 </div>
