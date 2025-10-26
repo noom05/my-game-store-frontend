@@ -21,9 +21,11 @@ export class Detail implements OnInit, OnDestroy {
   errorMessage: string | null = null;
   isPurchasing = false;
   hasPurchased: boolean = false;
+  isInCart: boolean = false;
 
   private apiSubscription: Subscription | null = null;
   private currentUser: any = null;
+  private cartGameIds: number[] = [];
 
   constructor(
     private route: ActivatedRoute,
@@ -76,6 +78,8 @@ export class Detail implements OnInit, OnDestroy {
       return;
     }
 
+    this.loadCart(userId);
+
     this.apiSubscription = this.api
       .getGameDetailWithRankAndPurchase(id ?? '', String(userId))
       .subscribe({
@@ -107,6 +111,23 @@ export class Detail implements OnInit, OnDestroy {
           this.cdr.detectChanges();
         },
       });
+  }
+
+  private loadCart(userId: string): void {
+    this.api.getCart(userId).subscribe({
+      next: (cartItems: any[]) => {
+        this.cartGameIds = cartItems.map((item) => item.id);
+        this.checkIfInCart(); // เช็คสถานะตะกร้า
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('โหลดรถเข็นล้มเหลว', err),
+    });
+  }
+
+  private checkIfInCart(): void {
+    if (this.gameId) {
+      this.isInCart = this.cartGameIds.includes(Number(this.gameId));
+    }
   }
 
   private formatDate(dateStr: string | null): string {
@@ -143,6 +164,44 @@ export class Detail implements OnInit, OnDestroy {
         error: (err) => alert('เกิดข้อผิดพลาดในการลบเกม'),
       });
     }
+  }
+
+  addToCart(event: MouseEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (!this.currentUser) {
+      alert('กรุณาเข้าสู่ระบบก่อนทำรายการ');
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    const gameId = this.game.id;
+
+    if (this.isInCart) {
+      alert('เกมนี้อยู่ในรถเข็นแล้ว');
+      return;
+    }
+
+    if (this.hasPurchased) {
+      alert('คุณได้ซื้อเกมนี้ไปแล้ว');
+      return;
+    }
+
+    this.api
+      .addToCart({ user_id: this.currentUser.uid, game_id: gameId })
+      .subscribe({
+        next: () => {
+          this.cartGameIds.push(gameId);
+          this.isInCart = true; // อัปเดตสถานะ
+          alert(`เพิ่มเกม "${this.game.title}" ลงในตะกร้าแล้ว!`);
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('เพิ่มเกมลงรถเข็นล้มเหลว', err);
+          alert('ไม่สามารถเพิ่มเกมลงรถเข็นได้');
+        },
+      });
   }
 
   purchaseGame(): void {
@@ -210,4 +269,5 @@ export class Detail implements OnInit, OnDestroy {
         });
       });
   }
+  
 }

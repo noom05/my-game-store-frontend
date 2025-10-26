@@ -39,7 +39,7 @@
         </span>
 
         <!-- ✅ ซ่อนปุ่มรถเข็นเมื่อ hasPurchased เป็น true -->
-        <button *ngIf="!hasPurchased" class="btn btn-outline-dark btn-cart" (click)="purchaseGame()">
+        <button *ngIf="!hasPurchased" class="btn btn-outline-dark btn-cart" (click)="addToCart($event)">
           <i class="bi bi-cart-plus"></i> เพิ่มไปยังรถเข็น
         </button>
       </div>
