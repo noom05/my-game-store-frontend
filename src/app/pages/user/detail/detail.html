@@ -11,7 +11,7 @@
   </div>
 
   <div *ngIf="game && !isLoading" class="row g-5">
-    
+
     <div class="col-lg-6">
       <img [src]="game.image" [alt]="game.title" class="game-image img-fluid">
     </div>
@@ -19,6 +19,7 @@
     <div class="col-lg-6">
       <h1 class="game-title">{{ game.title }}</h1>
       <p class="game-description">{{ game.description }}</p>
+      <p><strong>เกมขายดีอันดับที่:</strong>{{ game.rank || 'ไม่ระบุ' }}</p>
       <p class="release-date"><strong>วันที่วางจำหน่าย:</strong> {{ game.releaseDate }}</p>
 
       <div class="category-tags mb-4">
@@ -28,20 +29,26 @@
       <p class="price">{{ game.price | currency:'฿':'symbol':'1.2-2' }}</p>
 
       <div *ngIf="!isAdmin" class="action-buttons d-flex align-items-center gap-3">
-        <button class="btn btn-dark btn-buy" (click)="purchaseGame()" [disabled]="isPurchasing">
+        <button *ngIf="!hasPurchased" class="btn btn-dark btn-buy" (click)="purchaseGame()" [disabled]="isPurchasing">
           <span *ngIf="!isPurchasing">ซื้อ</span>
           <span *ngIf="isPurchasing" class="spinner-border spinner-border-sm"></span>
         </button>
-        <button class="btn btn-outline-dark btn-cart" (click)="purchaseGame()" [disabled]="isPurchasing">
+
+        <span *ngIf="hasPurchased" class="bg-success btn btn-buy text-white">
+          ซื้อแล้ว
+        </span>
+
+        <!-- ✅ ซ่อนปุ่มรถเข็นเมื่อ hasPurchased เป็น true -->
+        <button *ngIf="!hasPurchased" class="btn btn-outline-dark btn-cart" (click)="purchaseGame()">
           <i class="bi bi-cart-plus"></i> เพิ่มไปยังรถเข็น
         </button>
       </div>
       <div *ngIf="isAdmin" class="action-buttons d-flex align-items-center gap-3">
         <a [routerLink]="['/edit-game', gameId]" class="btn btn-warning">
-            <i class="bi bi-pencil-square"></i> แก้ไข
+          <i class="bi bi-pencil-square"></i> แก้ไข
         </a>
         <button class="btn btn-outline-danger" (click)="confirmDelete()">
-            <i class="bi bi-trash"></i> ลบ
+          <i class="bi bi-trash"></i> ลบ
         </button>
       </div>
 

@@ -1,113 +1,113 @@
-<!-- ส่วนแสดงผลหลัก -->
-<div class="container-fluid px-md-5 py-4">
-  <!-- แสดง Spinner ขณะกำลังโหลด -->
-  <div *ngIf="isLoading" class="text-center py-5">
-    <div class="spinner-border text-warning" role="status">
-      <span class="visually-hidden">Loading...</span>
-    </div>
-    <p class="mt-2">กำลังโหลดข้อมูลเกม...</p>
-  </div>
-
-  <!-- แสดง Error ถ้ามี -->
-  <div *ngIf="errorMessage" class="alert alert-danger">
-    {{ errorMessage }}
-  </div>
-
-  <!-- แสดงเนื้อหาเมื่อโหลดเสร็จแล้ว -->
-  <div *ngIf="!isLoading && !errorMessage">
-    <!-- Banner -->
-    <div class="banner mb-5" [style.background-image]="
-        'url(https://gaming-cdn.com/images/products/19691/616x353/ea-sports-fc-26-pc-ea-app-cover.jpg?v=1758868329)'
-      " role="img" aria-label="EA Sports FC 26 banner"></div>
-
-    <div class="row justify-content-center g-2 mb-4">
-      <div class="col-md-6 col-lg-5">
-        <div class="search-filter d-flex flex-wrap gap-2">
-          <!-- Search Input -->
-          <div class="flex-grow-1 position-relative">
-            <input #searchInput type="text" class="form-control search-input" placeholder="ค้นหาเกม..."
-              (keyup.enter)="searchGame(searchInput.value)" />
-            <button class="btn search-btn" (click)="searchGame(searchInput.value)">
-              <i class="bi bi-search"></i>
-            </button>
-          </div>
-
-          <!-- Type Dropdown -->
-          <div>
-            <select [ngModel]="selectedTypeId" (change)="filterByType($event)" class="form-select type-select">
-              <option value="all">ทุกประเภท</option>
-              <option *ngFor="let type of allTypes" [value]="type.id">
-                {{ type.type_name }}
-              </option>
-            </select>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ปุ่มเพิ่มเกมสำหรับ Admin -->
-    <div *ngIf="isAdmin" class="d-flex justify-content-end mb-4">
-      <a routerLink="/add-game" class="btn btn-success">
-        <i class="bi bi-plus-circle-fill me-2"></i>เพิ่มเกมใหม่
-      </a>
-    </div>
-
-    <!-- Best Seller Section -->
-    <section class="mb-5">
-      <h2 class="section-title">Best Seller</h2>
-      <div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-4">
-        <div *ngFor="let game of bestSellerGames" class="col">
-          <a [routerLink]="['/detail', game.id]" class="game-card-link">
-            <div class="card game-card h-100">
-              <img [src]="game.imageUrl" class="card-img-top" [alt]="game.game_name" />
-              <div class="card-body">
-                <h5 class="card-title">{{ game.game_name }}</h5>
-              </div>
-              <div class="card-footer">
-                <span class="price">{{
-                  game.price | currency : "฿" : "symbol" : "1.0-0"
-                  }}</span>
-                <button class="btn cart-btn" (click)="addToCart($event, game.id)">
-                  <i class="bi bi-cart-plus"></i>
-                </button>
-              </div>
-            </div>
-          </a>
-        </div>
-      </div>
-    </section>
-
-    <!-- All Games Section -->
-    <section>
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="section-title">All Games</h2>
-      </div>
-
-      <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4">
-        <div *ngFor="let game of filteredGames" class="col">
-          <a [routerLink]="['/detail', game.id]" class="game-card-link">
-            <div class="card game-card h-100">
-              <img [src]="game.imageUrl" class="card-img-top" [alt]="game.game_name" />
-              <div class="card-body">
-                <h5 class="card-title">{{ game.game_name }}</h5>
-                <p class="card-text categories">{{ game.categories }}</p>
-              </div>
-              <div class="card-footer">
-                <span class="price">{{
-                  game.price | currency : "฿" : "symbol" : "1.0-0"
-                  }}</span>
-                <button class="btn cart-btn" (click)="addToCart($event, game.id)">
-                  <i class="bi bi-cart-plus"></i>
-                </button>
-              </div>
-            </div>
-          </a>
-        </div>
-        <!-- แสดงข้อความเมื่อไม่พบเกมจากการค้นหา -->
-        <div *ngIf="filteredGames.length === 0" class="col-12 text-center py-5">
-          <h4>ไม่พบเกมที่คุณค้นหา</h4>
-        </div>
-      </div>
-    </section>
-  </div>
+<!-- Banner -->
+<div class="banner" style="background-image: url('http://localhost:3000/assets/asasin.jpg');">
 </div>
+
+<div class="container-fluid px-md-5 py-3">
+
+  <!-- Search + Filter -->
+  <div class="row justify-content-center g-2 mb-4">
+    <div class="col-md-6 col-lg-5">
+      <div class="search-filter d-flex flex-wrap gap-2">
+
+        <!-- Search Input -->
+        <div class="flex-grow-1 position-relative">
+          <input #searchInput type="text" class="form-control search-input" placeholder="ค้นหาเกม..."
+            (keyup.enter)="searchGame(searchInput.value)">
+          <button class="btn search-btn" (click)="searchGame(searchInput.value)">
+            <i class="bi bi-search"></i>
+          </button>
+        </div>
+
+        <!-- Type Dropdown -->
+        <div>
+          <select [(ngModel)]="selectedType" (change)="filterGames()" class="form-select type-select">
+            <option value="">ทุกประเภท</option>
+            <option *ngFor="let type of gameTypes" [value]="type.type_name">{{ type.type_name }}</option>
+          </select>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ส่วนแสดงผลหลัก -->
+  <div class="container-fluid px-md-5 py-4">
+
+    <!-- แสดง Spinner ขณะกำลังโหลด -->
+    <div *ngIf="isLoading" class="text-center py-5">
+      <div class="spinner-border text-warning" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <p class="mt-2">กำลังโหลดข้อมูลเกม...</p>
+    </div>
+
+    <!-- แสดง Error ถ้ามี -->
+    <div *ngIf="errorMessage" class="alert alert-danger">
+      {{ errorMessage }}
+    </div>
+
+    <!-- แสดงเนื้อหาเมื่อโหลดเสร็จแล้ว -->
+    <div *ngIf="!isLoading && !errorMessage">
+
+      <!-- ปุ่มเพิ่มเกมสำหรับ Admin -->
+      <div *ngIf="isAdmin" class="d-flex justify-content-end mb-4">
+        <a routerLink="/add-game" class="btn btn-success">
+          <i class="bi bi-plus-circle-fill me-2"></i>เพิ่มเกมใหม่
+        </a>
+      </div>
+
+      <!-- Best Seller Section -->
+      <section class="mb-5">
+        <h2 class="section-title">Best Seller</h2>
+        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-4">
+          <div *ngFor="let game of bestSellerGames" class="col">
+            <a [routerLink]="['/detail', game.id]" class="game-card-link">
+              <div class="card game-card h-100">
+                <img [src]="game.imageUrl" class="card-img-top" [alt]="game.game_name">
+                <div class="card-body">
+                  <h5 class="card-title">{{ game.game_name }}</h5>
+                </div>
+                <div class="card-footer">
+                  <span class="price">{{ game.price | currency:'฿':'symbol':'1.0-0' }}</span>
+                  <button class="btn cart-btn" (click)="addToCart($event, game.id)">
+                    <i class="bi bi-cart-plus"></i>
+                  </button>
+                </div>
+              </div>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- All Games Section -->
+      <section>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h2 class="section-title">All Games</h2>
+        </div>
+
+        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4">
+          <div *ngFor="let game of filteredGames" class="col">
+            <a [routerLink]="['/detail', game.id]" class="game-card-link">
+              <div class="card game-card h-100">
+                <img [src]="game.imageUrl" class="card-img-top" [alt]="game.game_name">
+                <div class="card-body">
+                  <h5 class="card-title">{{ game.game_name }}</h5>
+                  <p class="card-text categories">{{ game.categories }}</p>
+                </div>
+                <div class="card-footer">
+                  <span class="price">{{ game.price | currency:'฿':'symbol':'1.0-0' }}</span>
+                  <button class="btn cart-btn" (click)="addToCart($event, game.id)">
+                    <i class="bi bi-cart-plus"></i>
+                  </button>
+                </div>
+              </div>
+            </a>
+          </div>
+          <!-- แสดงข้อความเมื่อไม่พบเกมจากการค้นหา -->
+          <div *ngIf="filteredGames.length === 0" class="col-12 text-center py-5">
+            <h4>ไม่พบเกมที่คุณค้นหา</h4>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
