@@ -3,6 +3,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Api } from '../../../services/api';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-cart',
@@ -12,6 +13,7 @@ import { Api } from '../../../services/api';
   styleUrls: ['./cart.css'],
 })
 export class Cart implements OnInit {
+  apiUrl = environment.apiUrl;
   cartItems: any[] = [];
   isLoading = true;
   Amount = 0;
