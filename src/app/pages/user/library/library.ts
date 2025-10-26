@@ -37,7 +37,7 @@ export class Library implements OnInit {
 
       this.isLoading = true;
       this.http
-        .get<any[]>(`http://localhost:3000/user/library/${user.uid}`, {
+        .get<any[]>(`https://games-database-main.onrender.com/user/library/${user.uid}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },

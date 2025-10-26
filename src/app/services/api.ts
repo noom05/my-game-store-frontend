@@ -9,7 +9,7 @@ import { environment } from '../../environments/environment';
 export class Api {
   // private apiUrl = 'https://games-database-main.onrender.com';
   // private apiUrl = 'http://localhost:3000';
-  private apiUrl = 'http://localhost:3000';
+  private apiUrl = 'https://games-database-main.onrender.com';
   // URL หลักของ Backend
 
   constructor(private http: HttpClient) {}
