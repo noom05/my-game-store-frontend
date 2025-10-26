@@ -61,19 +61,16 @@ export class Dashboard implements OnInit {
   loadGames(): void {
     this.errorMessage = null;
 
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    const userId = user?.uid || null;
-
-    this.api.getAllGames(userId).subscribe({
+    this.api.getAllGames().subscribe({
       next: (data) => {
-        this.allGames = data.map((game: any) => ({
+        this.allGames = data.map((game) => ({
           ...game,
-          imageUrl: `http://localhost:3000/uploads/${game.image}`,
+          imageUrl: `https://games-database-main.onrender.com/uploads/${game.image}`,
+          //https://games-database-main.onrender.com/uploads/${game.image}
           types: game.categories
             ? game.categories.split(',').map((t: string) => t.trim())
             : [],
-          total_sales: game.total_sales || 0,
-          isPurchased: !!game.isPurchased, // ✅ ฟิลด์เช็คว่าซื้อแล้วหรือยัง
+          total_sales: game.total_sales || 0, // ให้แน่ใจว่ามีค่า
         }));
 
         // ✅ Best Seller 5 อันดับ
