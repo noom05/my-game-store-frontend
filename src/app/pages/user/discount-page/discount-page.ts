@@ -44,7 +44,11 @@ export class DiscountPage implements OnInit {
 
     this.apiSub = this.api.getAllDiscountCodes().subscribe({
       next: (data) => {
-        this.codes = data;
+        // ✅ กรองเฉพาะโค้ดที่ยังไม่หมดสิทธิ์
+        this.codes = data.filter(
+          (code: any) => code.current_uses < code.max_uses
+        );
+
         this.isLoading = false;
         this.cdr.detectChanges();
       },

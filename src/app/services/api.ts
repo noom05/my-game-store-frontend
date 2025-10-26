@@ -72,11 +72,16 @@ export class Api {
   }
 
   // --- ฟังก์ชันสำหรับ Games ---
-  getAllGames(): Observable<any[]> {
+  getAllGames(userId?: number | null): Observable<any[]> {
     const headers = this.getAuthHeaders();
     if (!headers)
       return throwError(() => new Error('No authorization token found'));
-    return this.http.get<any[]>(`${this.apiUrl}/games`, { headers });
+    
+    const url = userId
+      ? `${this.apiUrl}/games?userId=${userId}`
+      : `${this.apiUrl}/games`;
+
+    return this.http.get<any[]>(url, { headers });
   }
 
   getGameById(id: string): Observable<any> {
