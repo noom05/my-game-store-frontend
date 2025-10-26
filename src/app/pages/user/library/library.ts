@@ -3,6 +3,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { UserService } from '../../../services/user';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-library',
@@ -12,6 +13,7 @@ import { RouterLink } from '@angular/router';
   styleUrls: ['./library.css'],
 })
 export class Library implements OnInit {
+  apiUrl = environment.apiUrl;
   purchasedGames: any[] = [];
   isLoading = true;
   errorMessage: string | null = null;

@@ -11,7 +11,7 @@
         <div class="col-md-3 col-sm-6" *ngFor="let game of purchasedGames">
             <a [routerLink]="['/detail', game.id]" style="text-decoration: none;">
                 <div class="card h-100 shadow-sm">
-                    <img [src]="'/uploads/' + game.image" class="card-img-top" alt="{{ game.game_name }}">
+                    <img [src]="apiUrl + '/uploads/' + game.image" class="card-img-top" alt="{{ game.game_name }}">
                     <div class="card-body text-center">
                         <h5 class="card-title">{{ game.game_name }}</h5>
                         <a [routerLink]="['/game', game.id]" class="btn btn-dark btn-sm">
