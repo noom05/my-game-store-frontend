@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
+import { forkJoin, map, Observable, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -9,7 +9,7 @@ import { environment } from '../../environments/environment';
 export class Api {
   // private apiUrl = 'https://games-database-main.onrender.com';
   // private apiUrl = 'http://localhost:3000';
-  private apiUrl = 'https://games-database-main.onrender.com';
+  private apiUrl = 'http://localhost:3000';
   // URL หลักของ Backend
 
   constructor(private http: HttpClient) {}
@@ -74,10 +74,9 @@ export class Api {
   // --- ฟังก์ชันสำหรับ Games ---
   getAllGames(): Observable<any[]> {
     const headers = this.getAuthHeaders();
-    if (headers) {
-      return this.http.get<any[]>(`${this.apiUrl}/games`, { headers });
-    }
-    return this.http.get<any[]>(`${this.apiUrl}/games`);
+    if (!headers)
+      return throwError(() => new Error('No authorization token found'));
+    return this.http.get<any[]>(`${this.apiUrl}/games`, { headers });
   }
 
   getGameById(id: string): Observable<any> {
@@ -148,6 +147,99 @@ export class Api {
     });
   }
 
+  // ดึงเกมตาม type
+  getGamesByType(typeId: number): Observable<any[]> {
+    const headers = this.getAuthHeaders();
+    if (!headers)
+      return throwError(() => new Error('No authorization token found'));
+    return this.http.get<any[]>(`${this.apiUrl}/games/type/${typeId}`, {
+      headers,
+    });
+  }
+
+  getGameDetailWithRankAndPurchase(gameId: string, userId: string) {
+    const headers = this.getAuthHeaders();
+    if (!headers)
+      return throwError(() => new Error('No authorization token found'));
+
+    // เรียก 2 endpoint พร้อมกัน
+    const rankRequest = this.http.get<any>(
+      `${this.apiUrl}/games/${gameId}/detail-with-rank`,
+      { headers }
+    );
+
+    const purchaseRequest = this.http.get<any>(
+      `${this.apiUrl}/user/game/${gameId}/detail?userId=${userId}`,
+      { headers }
+    );
+
+    // รวมผลลัพธ์ทั้งสองฝั่ง
+    return forkJoin([rankRequest, purchaseRequest]).pipe(
+      map(([rankData, purchaseData]) => {
+        return {
+          ...rankData, // มี game, rank
+          isPurchased: purchaseData.isPurchased, // เพิ่มสถานะ
+        };
+      })
+    );
+  }
+
+  addToCart(payload: { user_id: string; game_id: number }) {
+    const headers = this.getAuthHeaders();
+    if (!headers)
+      return throwError(() => new Error('No authorization token found'));
+    return this.http.post(`${this.apiUrl}/user/cart/add`, payload, { headers });
+  }
+
+  // เปลี่ยน getCart ให้ระบุ generic <any[]>
+  getCart(userId: string): Observable<any[]> {
+    const headers = this.getAuthHeaders();
+    if (!headers)
+      return throwError(() => new Error('No authorization token found'));
+    return this.http.get<any[]>(`${this.apiUrl}/user/cart/${userId}`, {
+      headers,
+    });
+  }
+
+  removeFromCart(payload: { user_id: string; game_id: number }) {
+    const headers = this.getAuthHeaders();
+    if (!headers)
+      return throwError(() => new Error('No authorization token found'));
+    return this.http.delete(`${this.apiUrl}/user/cart/remove`, {
+      headers,
+      body: payload,
+    });
+  }
+
+  // เปลี่ยน checkoutCart ให้รับ discount_code ด้วย
+  checkoutCart(payload: { user_id: string; discount_code?: string }) {
+    const headers = this.getAuthHeaders();
+    if (!headers)
+      return throwError(() => new Error('No authorization token found'));
+
+    return this.http.post(`${this.apiUrl}/user/cart/checkout`, payload, {
+      headers,
+    });
+  }
+
+  searchGames(keyword: string): Observable<any[]> {
+    const headers = this.getAuthHeaders();
+    if (!headers)
+      return throwError(() => new Error('No authorization token found'));
+    return this.http.get<any[]>(`${this.apiUrl}/games/search/${keyword}`, {
+      headers,
+    });
+  }
+
+  getGamesByMultipleTypes(typeIds: number[]): Observable<any[]> {
+    const token = localStorage.getItem('token'); // หรือเก็บไว้ใน service
+    return this.http.post<any[]>(
+      `${this.apiUrl}/games/multiple-types`,
+      { typeIds },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+  }
+
   /**
    * [POST] สร้างโค้ดส่วนลดใหม่
    * @param payload ข้อมูลโค้ด
@@ -164,20 +256,18 @@ export class Api {
   }
 
   /**
- * [GET] ดึงข้อมูลโค้ด 1 ตัวด้วย ID
- */
-getDiscountCodeById(id: number): Observable<any> {
-    return this.http.get(`${this.apiUrl}/discount/${id}`, {
-    });
-}
+   * [GET] ดึงข้อมูลโค้ด 1 ตัวด้วย ID
+   */
+  getDiscountCodeById(id: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/discount/${id}`, {});
+  }
 
-/**
- * [PUT] อัปเดตข้อมูลโค้ด
- */
-updateDiscountCode(id: number, payload: any): Observable<any> {
-    return this.http.put(`${this.apiUrl}/discount/${id}`, payload, {
-    });
-}
+  /**
+   * [PUT] อัปเดตข้อมูลโค้ด
+   */
+  updateDiscountCode(id: number, payload: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/discount/${id}`, payload, {});
+  }
 
   /**
    * [DELETE] ลบโค้ดส่วนลด
@@ -185,5 +275,9 @@ updateDiscountCode(id: number, payload: any): Observable<any> {
    */
   deleteDiscountCode(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/discount/${id}`);
+  }
+
+  applyDiscount(payload: { code: string; user_id: string }): Observable<any> {
+    return this.http.post(`${this.apiUrl}/discount/apply`, payload);
   }
 }

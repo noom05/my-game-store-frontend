@@ -1,0 +1,53 @@
+<div class="container">
+  <h2>โค้ดทั้งหมด</h2>
+
+  <div *ngIf="isLoading" class="message">กำลังโหลดข้อมูล...</div>
+  <div *ngIf="errorMessage" class="message error">{{ errorMessage }}</div>
+
+  <div *ngIf="!isLoading && codes.length === 0" class="message">
+    ยังไม่มีโค้ดส่วนลดในระบบ
+  </div>
+
+  <table *ngIf="!isLoading && codes.length > 0">
+    <thead>
+      <tr>
+        <th>โค้ด (Code)</th>
+        <th>ประเภท</th>
+        <th>มูลค่า</th>
+        <th>จำนวนสิทธิ์ (ใช้ไป/ทั้งหมด)</th>
+        <th>วันหมดอายุ</th>
+        <th>สถานะ</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let code of codes; let i = index">
+        <td>
+          <div class="code-cell">
+            <span class="code-text">{{ code.code }}</span>
+            <button 
+              class="copy-btn" 
+              [class.copied]="copiedIndex === i"
+              (click)="copyCode(code.code, i)"
+              title="คัดลอกโค้ด">
+              {{ copiedIndex === i ? 'คัดลอกแล้ว' : 'คัดลอก' }}
+            </button>
+          </div>
+        </td>
+        <td>{{ code.discount_type }}</td>
+        <td>
+          {{ code.discount_value }}
+          {{ code.discount_type === "percent" ? "%" : "บาท" }}
+        </td>
+        <td>{{ code.current_uses }} / {{ code.max_uses }}</td>
+        <td>
+          {{ code.expiry_date ? (code.expiry_date | date : "short") : "-" }}
+        </td>
+        <td>
+          <span [class]="code.is_active ? 'status-active' : 'status-inactive'">
+            {{ code.is_active ? "ใช้งานได้" : "ปิดใช้งาน" }}
+          </span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

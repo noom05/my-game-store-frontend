@@ -1,0 +1,33 @@
+<div class="container py-5">
+    <h2 class="mb-4 fw-bold text-center">🎮 คลังเกมของฉัน</h2>
+
+    <!-- Loader -->
+    <div *ngIf="isLoading" class="text-center py-5">
+        <div class="spinner-border text-dark"></div>
+    </div>
+
+    <!-- ถ้ามีเกม -->
+    <div class="row g-4" *ngIf="!isLoading && purchasedGames.length > 0">
+        <div class="col-md-3 col-sm-6" *ngFor="let game of purchasedGames">
+            <a [routerLink]="['/detail', game.id]" style="text-decoration: none;">
+                <div class="card h-100 shadow-sm">
+                    <img [src]="'/uploads/' + game.image" class="card-img-top" alt="{{ game.game_name }}">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">{{ game.game_name }}</h5>
+                        <a [routerLink]="['/game', game.id]" class="btn btn-dark btn-sm">
+                            <i class="bi bi-controller"></i> เล่นเลย
+                        </a>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- ถ้ายังไม่มีเกม -->
+    <div *ngIf="!isLoading && purchasedGames.length === 0" class="text-center py-5">
+        <img src="assets/empty-library.png" width="150" alt="Empty Library" class="mb-3">
+        <h5>คุณยังไม่มีเกมในคลัง</h5>
+        <p class="text-muted">ไปเลือกซื้อเกมในหน้าร้านค้าได้เลย!</p>
+        <a routerLink="/store" class="btn btn-outline-dark">ไปหน้าร้านค้า</a>
+    </div>
+</div>

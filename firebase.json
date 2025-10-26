@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "public": "dist/my-game-store-frontend",
+    "public": "dist/frontend/browser",
     "ignore": [
       "firebase.json",
       "**/.*",
