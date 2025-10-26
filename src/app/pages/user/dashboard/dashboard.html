@@ -1,5 +1,5 @@
 <!-- Banner -->
-<div class="banner" style="background-image: url('https://games-database-main.onrender.com/assets/fc26.jpg');">
+<div class="banner" style="background-image: url('http://localhost:3000/assets/asasin.jpg');">
 </div>
 
 <div class="container-fluid px-md-5 py-3">
@@ -69,9 +69,16 @@
                 </div>
                 <div class="card-footer">
                   <span class="price">{{ game.price | currency:'฿':'symbol':'1.0-0' }}</span>
-                  <button class="btn cart-btn" (click)="addToCart($event, game.id)">
+
+                  <!-- ถ้ายังไม่ได้ซื้อ -->
+                  <button *ngIf="!game.isPurchased" class="btn cart-btn" (click)="addToCart($event, game.id)">
                     <i class="bi bi-cart-plus"></i>
                   </button>
+
+                  <!-- ถ้าซื้อแล้ว -->
+                  <span *ngIf="game.isPurchased" class="badge bg-success">
+                    <i class="bi bi-check-circle me-1"></i> ซื้อแล้ว
+                  </span>
                 </div>
               </div>
             </a>
@@ -96,9 +103,16 @@
                 </div>
                 <div class="card-footer">
                   <span class="price">{{ game.price | currency:'฿':'symbol':'1.0-0' }}</span>
-                  <button class="btn cart-btn" (click)="addToCart($event, game.id)">
+
+                  <!-- ถ้ายังไม่ได้ซื้อ -->
+                  <button *ngIf="!game.isPurchased" class="btn cart-btn" (click)="addToCart($event, game.id)">
                     <i class="bi bi-cart-plus"></i>
                   </button>
+
+                  <!-- ถ้าซื้อแล้ว -->
+                  <span *ngIf="game.isPurchased" class="badge bg-success">
+                    <i class="bi bi-check-circle me-1"></i> ซื้อแล้ว
+                  </span>
                 </div>
               </div>
             </a>
